@@ -7,7 +7,7 @@ client = TestClient(app)
 
 
 def test_liveness():
-    response = client.get("/health/live")
+    response = client.get("/api/v1/health/live")
 
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}

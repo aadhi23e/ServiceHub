@@ -1,11 +1,18 @@
-# uvicorn app.main:app --reload
-
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.health import router as health_router
+from app.api.router import api_router
 from app.core.config import get_settings
+from app.core.exception_handlers import (
+    http_exception_handler,
+    servicehub_exception_handler,
+    unhandled_exception_handler,
+    validation_exception_handler,
+)
+from app.core.exceptions import ServiceHubError
 from app.core.logging import configure_logging, logger
 from app.middleware.request_id import RequestIDMiddleware
 
@@ -36,11 +43,31 @@ app = FastAPI(
 
 app.add_middleware(RequestIDMiddleware)
 
-app.include_router(health_router)
+app.add_exception_handler(
+    ServiceHubError,
+    servicehub_exception_handler,
+)
+
+app.add_exception_handler(
+    StarletteHTTPException,
+    http_exception_handler,
+)
+
+app.add_exception_handler(
+    RequestValidationError,
+    validation_exception_handler,
+)
+
+app.add_exception_handler(
+    Exception,
+    unhandled_exception_handler,
+)
+
+app.include_router(api_router)
 
 
 @app.get("/")
-def root():
+def root() -> dict[str, str]:
     return {
         "name": "ServiceHub API",
         "version": "0.1.0",
