@@ -27,6 +27,7 @@ class RateLimitResult:
     limit: int
     remaining: int
     retry_after: int
+    policy: str
 
 def build_rate_limit_key(
     *,
@@ -45,12 +46,16 @@ class RateLimiter:
         key: str,
         limit: int,
         window_seconds: int,
+        policy: str,
     ) -> RateLimitResult:
         if limit <= 0:
             raise ValueError("limit must be greater than zero")
 
         if window_seconds <= 0:
             raise ValueError("window_seconds must be greater than zero")
+
+        if not policy:
+            raise ValueError("policy must not be empty")
 
         try:
             result = self.redis.eval(
@@ -71,12 +76,14 @@ class RateLimiter:
                 limit=limit,
                 remaining=remaining,
                 retry_after=ttl,
+                policy=policy,
             )
 
         except redis.RedisError:
             logger.exception(
                 "rate_limit_redis_error",
                 rate_limit_key=key,
+                rate_limit_policy=policy,
             )
 
             return RateLimitResult(
@@ -84,6 +91,7 @@ class RateLimiter:
                 limit=limit,
                 remaining=limit,
                 retry_after=0,
+                policy=policy,
             )
 
     def enforce(
@@ -92,16 +100,21 @@ class RateLimiter:
         key: str,
         limit: int,
         window_seconds: int,
+        policy: str,
     ) -> RateLimitResult:
         result = self.check(
             key=key,
             limit=limit,
             window_seconds=window_seconds,
+            policy=policy,
         )
 
         if not result.allowed:
             raise RateLimitError(
                 retry_after=result.retry_after,
+                limit=result.limit,
+                remaining=result.remaining,
+                policy=result.policy,
             )
 
         return result

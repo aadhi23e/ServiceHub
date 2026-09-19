@@ -94,3 +94,34 @@ def test_rate_limit_error_clamps_negative_retry_after():
     )
 
     assert error.retry_after == 0
+
+def test_rate_limit_error_supports_rate_limit_metadata():
+    error = RateLimitError(
+        retry_after=37,
+        limit=100,
+        remaining=0,
+        policy="general",
+    )
+
+    assert error.status_code == 429
+    assert error.code == "RATE_LIMITED"
+    assert error.message == (
+        "Too many requests. Please try again later."
+    )
+
+    assert error.retry_after == 37
+    assert error.limit == 100
+    assert error.remaining == 0
+    assert error.policy == "general"
+
+def test_rate_limit_error_clamps_metadata():
+    error = RateLimitError(
+        retry_after=-10,
+        limit=-100,
+        remaining=-5,
+        policy="general",
+    )
+
+    assert error.retry_after == 0
+    assert error.limit == 0
+    assert error.remaining == 0

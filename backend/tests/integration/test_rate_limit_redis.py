@@ -23,18 +23,21 @@ def test_rate_limiter_uses_atomic_redis_script():
             key=key,
             limit=2,
             window_seconds=60,
+            policy="general"
         )
 
         second = limiter.check(
             key=key,
             limit=2,
             window_seconds=60,
+            policy="general"
         )
 
         third = limiter.check(
             key=key,
             limit=2,
             window_seconds=60,
+            policy="general"
         )
 
         assert first.allowed is True

@@ -68,6 +68,9 @@ async def servicehub_exception_handler(
     if isinstance(exc, RateLimitError):
         headers = {
             "Retry-After": str(exc.retry_after),
+            "RateLimit-Limit": str(exc.limit),
+            "RateLimit-Remaining": str(exc.remaining),
+            "RateLimit-Reset": str(exc.retry_after),
         }
 
     return _error_response(

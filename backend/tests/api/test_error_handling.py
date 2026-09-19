@@ -28,15 +28,21 @@ def unexpected_error():
 def rate_limited_error():
     raise RateLimitError(
         retry_after=37,
+        limit=100,
+        remaining=0,
+        policy="general",
     )
 
-app.include_router(router)
 
+
+app.include_router(router)
 
 client = TestClient(
     app,
     raise_server_exceptions=False,
 )
+
+
 
 
 def test_servicehub_error_response():
@@ -107,7 +113,9 @@ def test_rate_limit_error_response():
     assert body["error"]["request_id"].startswith("req_")
 
     assert response.headers["Retry-After"] == "37"
-
+    assert response.headers["RateLimit-Limit"] == "100"
+    assert response.headers["RateLimit-Remaining"] == "0"
+    assert response.headers["RateLimit-Reset"] == "37"
     assert response.headers["X-Request-ID"].startswith("req_")
 
 def test_rate_limit_error_preserves_request_id():
@@ -125,5 +133,9 @@ def test_rate_limit_error_preserves_request_id():
     body = response.json()
 
     assert body["error"]["request_id"] == request_id
+
     assert response.headers["X-Request-ID"] == request_id
     assert response.headers["Retry-After"] == "37"
+    assert response.headers["RateLimit-Limit"] == "100"
+    assert response.headers["RateLimit-Remaining"] == "0"
+    assert response.headers["RateLimit-Reset"] == "37"

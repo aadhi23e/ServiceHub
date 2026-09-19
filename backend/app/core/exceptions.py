@@ -75,6 +75,9 @@ class RateLimitError(ServiceHubError):
         message: str | None = None,
         *,
         retry_after: int = 0,
+        limit: int = 0,
+        remaining: int = 0,
+        policy: str = "",
         details: object | None = None,
     ) -> None:
         super().__init__(
@@ -83,7 +86,9 @@ class RateLimitError(ServiceHubError):
         )
 
         self.retry_after = max(retry_after, 0)
-
+        self.limit = max(limit, 0)
+        self.remaining = max(remaining, 0)
+        self.policy = policy
 
 class DependencyUnavailableError(ServiceHubError):
     """Raised when a required dependency is unavailable."""
