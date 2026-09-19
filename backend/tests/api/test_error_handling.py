@@ -1,9 +1,11 @@
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
-from app.core.exceptions import ConflictError
 from app.main import app
-
+from app.core.exceptions import (
+    ConflictError,
+    RateLimitError,
+)
 
 router = APIRouter(
     prefix="/test-errors",
@@ -22,6 +24,11 @@ def servicehub_error():
 def unexpected_error():
     raise RuntimeError("This should never be exposed to the client.")
 
+@router.get("/rate-limited")
+def rate_limited_error():
+    raise RateLimitError(
+        retry_after=37,
+    )
 
 app.include_router(router)
 
@@ -83,3 +90,40 @@ def test_unhandled_error_response():
     assert body["error"]["request_id"].startswith("req_")
 
     assert "This should never be exposed" not in response.text
+
+def test_rate_limit_error_response():
+    response = client.get("/test-errors/rate-limited")
+
+    assert response.status_code == 429
+
+    body = response.json()
+
+    assert body["error"]["code"] == "RATE_LIMITED"
+    assert (
+        body["error"]["message"]
+        == "Too many requests. Please try again later."
+    )
+
+    assert body["error"]["request_id"].startswith("req_")
+
+    assert response.headers["Retry-After"] == "37"
+
+    assert response.headers["X-Request-ID"].startswith("req_")
+
+def test_rate_limit_error_preserves_request_id():
+    request_id = "req_rate_limit_test_123"
+
+    response = client.get(
+        "/test-errors/rate-limited",
+        headers={
+            "X-Request-ID": request_id,
+        },
+    )
+
+    assert response.status_code == 429
+
+    body = response.json()
+
+    assert body["error"]["request_id"] == request_id
+    assert response.headers["X-Request-ID"] == request_id
+    assert response.headers["Retry-After"] == "37"

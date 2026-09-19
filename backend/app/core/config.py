@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     allowed_origins: str = "http://localhost:5173"
 
     log_level: str = "INFO"
+    
+    rate_limit_enabled: bool = True
+    rate_limit_requests_per_minute: int = 100
+    rate_limit_auth_requests_per_minute: int = 5
 
     model_config = SettingsConfigDict(
         env_file=".env.local",

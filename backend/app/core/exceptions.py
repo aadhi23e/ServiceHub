@@ -66,10 +66,23 @@ class ValidationError(ServiceHubError):
 
 class RateLimitError(ServiceHubError):
     """Raised when a client exceeds a rate limit."""
-
     status_code = 429
     code = "RATE_LIMITED"
-    message = "Too many requests."
+    message = "Too many requests. Please try again later."
+
+    def __init__(
+        self,
+        message: str | None = None,
+        *,
+        retry_after: int = 0,
+        details: object | None = None,
+    ) -> None:
+        super().__init__(
+            message=message,
+            details=details,
+        )
+
+        self.retry_after = max(retry_after, 0)
 
 
 class DependencyUnavailableError(ServiceHubError):

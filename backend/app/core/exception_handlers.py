@@ -4,8 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.exceptions import ServiceHubError
-
+from app.core.exceptions import ServiceHubError, RateLimitError
 
 logger = structlog.get_logger()
 
@@ -26,6 +25,7 @@ def _error_response(
     code: str,
     message: str,
     details: object | None = None,
+    headers: dict[str, str] | None = None,
 ) -> JSONResponse:
     request_id = _get_request_id(request)
 
@@ -39,22 +39,36 @@ def _error_response(
         error["details"] = details
 
     return JSONResponse(
-        status_code=status_code,
-        content={
-            "error": error,
-        },
-    )
+    status_code=status_code,
+    content={"error": error},
+    headers=headers,
+)
 
 
 async def servicehub_exception_handler(
     request: Request,
     exc: ServiceHubError,
 ) -> JSONResponse:
+
+    log_data = {
+        "error_code": exc.code,
+        "status_code": exc.status_code,
+    }
+
+    if isinstance(exc, RateLimitError):
+        log_data["retry_after"] = exc.retry_after
+
     logger.warning(
         "service_error",
-        error_code=exc.code,
-        status_code=exc.status_code,
+        **log_data,
     )
+
+    headers: dict[str, str] | None = None
+
+    if isinstance(exc, RateLimitError):
+        headers = {
+            "Retry-After": str(exc.retry_after),
+        }
 
     return _error_response(
         request,
@@ -62,8 +76,8 @@ async def servicehub_exception_handler(
         code=exc.code,
         message=exc.message,
         details=exc.details,
+        headers=headers,
     )
-
 
 async def http_exception_handler(
     request: Request,
