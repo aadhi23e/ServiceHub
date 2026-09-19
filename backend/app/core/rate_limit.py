@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import redis
 import structlog
 from redis import Redis
+
 from app.core.exceptions import RateLimitError
 
 logger = structlog.get_logger()

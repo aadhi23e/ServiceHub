@@ -2,7 +2,6 @@ from fastapi import APIRouter, Response, status
 
 from app.core.health import check_dependencies
 
-
 router = APIRouter(
     prefix="/health",
     tags=["health"],

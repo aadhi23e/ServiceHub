@@ -18,6 +18,8 @@ dependencies = [
     "celery",
     "structlog",
     "python-json-logger",
+    "argon2-cffi",
+    "PyJWT",
 ]
 
 [project.optional-dependencies]

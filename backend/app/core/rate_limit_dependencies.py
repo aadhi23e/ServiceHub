@@ -1,18 +1,19 @@
 from collections.abc import Callable
+from typing import Annotated
 
 from fastapi import Depends, Request
 from redis import Redis
 
 from app.core.config import get_settings
-from app.core.dependencies import get_redis
 from app.core.rate_limit import RateLimiter, build_rate_limit_key
-from app.core.rate_limit_policy import RateLimitPolicy
 from app.core.rate_limit_policy import (
+    RateLimitPolicy,
     get_general_rate_limit_policy,
     get_login_rate_limit_policy,
     get_refresh_rate_limit_policy,
     get_registration_rate_limit_policy,
 )
+from app.core.redis import get_redis
 
 
 def create_rate_limit_dependency(
@@ -20,7 +21,7 @@ def create_rate_limit_dependency(
 ):
     def rate_limit_dependency(
         request: Request,
-        redis_client: Redis = Depends(get_redis),
+        redis_client: Annotated[Redis, Depends(get_redis)],
     ) -> None:
         settings = get_settings()
 

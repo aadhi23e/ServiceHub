@@ -1,13 +1,14 @@
 from unittest.mock import Mock
 
-import redis
 import pytest
+import redis
 
+from app.core.exceptions import RateLimitError
 from app.core.rate_limit import (
     RateLimiter,
     build_rate_limit_key,
 )
-from app.core.exceptions import RateLimitError
+
 
 def test_build_rate_limit_key():
     key = build_rate_limit_key(

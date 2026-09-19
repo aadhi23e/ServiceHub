@@ -1,10 +1,10 @@
-from datetime import datetime, time
+from datetime import time
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
-    DateTime,
     ForeignKey,
     Index,
     SmallInteger,
@@ -14,8 +14,6 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.provider import ProviderProfile

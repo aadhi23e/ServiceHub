@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     BigInteger,
@@ -11,14 +12,10 @@ from sqlalchemy import (
     Text,
     text,
 )
-
 from sqlalchemy.dialects.postgresql import ExcludeConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKeyConstraint
 
 from app.db.base import Base
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from app.models.provider import ProviderProfile

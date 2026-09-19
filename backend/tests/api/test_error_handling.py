@@ -1,11 +1,11 @@
 from fastapi import APIRouter
 from fastapi.testclient import TestClient
 
-from app.main import app
 from app.core.exceptions import (
     ConflictError,
     RateLimitError,
 )
+from app.main import app
 
 router = APIRouter(
     prefix="/test-errors",

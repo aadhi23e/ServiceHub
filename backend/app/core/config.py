@@ -27,7 +27,12 @@ class Settings(BaseSettings):
     rate_limit_refresh_requests_per_minute: int = 10
 
     rate_limit_window_seconds: int = 60
-    
+
+    jwt_secret_key: str
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
+
     model_config = SettingsConfigDict(
         env_file=".env.local",
         env_file_encoding="utf-8",

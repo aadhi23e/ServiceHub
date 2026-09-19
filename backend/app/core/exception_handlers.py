@@ -4,7 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.core.exceptions import ServiceHubError, RateLimitError
+from app.core.exceptions import RateLimitError, ServiceHubError
 
 logger = structlog.get_logger()
 

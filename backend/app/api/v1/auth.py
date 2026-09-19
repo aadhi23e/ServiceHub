@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 # from app.core.rate_limit_dependencies import general_rate_limit
 

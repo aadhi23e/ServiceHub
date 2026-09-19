@@ -16,7 +16,6 @@ from app.core.exceptions import ServiceHubError
 from app.core.logging import configure_logging, logger
 from app.middleware.request_id import RequestIDMiddleware
 
-
 settings = get_settings()
 
 

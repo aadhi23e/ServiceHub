@@ -4,6 +4,29 @@ import sys
 import structlog
 
 
+def log_auth_event(
+    event: str,
+    *,
+    user_id: int | None = None,
+    success: bool | None = None,
+) -> None:
+    logger = structlog.get_logger("servicehub.auth")
+
+    fields: dict[str, object] = {
+        "event": event,
+    }
+
+    if user_id is not None:
+        fields["user_id"] = user_id
+
+    if success is not None:
+        fields["success"] = success
+
+    logger.info(
+        event,
+        **fields,
+    )
+
 def configure_logging(log_level: str) -> None:
     logging.basicConfig(
         format="%(message)s",
