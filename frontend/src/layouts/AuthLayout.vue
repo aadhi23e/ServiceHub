@@ -13,7 +13,8 @@ import { RouterView } from "vue-router";
         <h1>ServiceHub</h1>
 
         <p>
-          Find trusted services and manage your bookings in one place.
+          Find trusted services and manage your bookings
+          in one place.
         </p>
       </div>
     </aside>
@@ -28,13 +29,20 @@ import { RouterView } from "vue-router";
 
 <style scoped>
 .auth-layout {
-  min-height: 100vh;
+  width: 100%;
+  min-height: 100dvh;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+  grid-template-columns: 60% 40%;
+  overflow: hidden;
   background: var(--color-background);
 }
 
+/* --------------------------------------------------
+   BRAND SIDE
+-------------------------------------------------- */
+
 .auth-layout__brand {
+  min-width: 0;
   display: flex;
   align-items: center;
   padding: var(--space-12);
@@ -48,70 +56,143 @@ import { RouterView } from "vue-router";
 }
 
 .auth-layout__brand-content {
-  max-width: 520px;
+  width: 100%;
+  max-width: 620px;
   margin: 0 auto;
 }
 
 .auth-layout__logo {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
+
   display: grid;
   place-items: center;
+
   margin-bottom: var(--space-6);
+
   border-radius: var(--radius-lg);
+
   background: rgb(255 255 255 / 0.14);
   border: 1px solid rgb(255 255 255 / 0.2);
-  font-size: 1.25rem;
+
+  font-size: 1.3rem;
   font-weight: 800;
 }
 
 .auth-layout__brand h1 {
   margin: 0 0 var(--space-4);
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  line-height: 1.1;
+
+  font-size: clamp(2.25rem, 4vw, 4rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
 }
 
 .auth-layout__brand p {
+  max-width: 500px;
+
   margin: 0;
-  max-width: 440px;
+
   color: rgb(255 255 255 / 0.82);
+
   font-size: 1.05rem;
   line-height: 1.7;
 }
 
+/* --------------------------------------------------
+   FORM SIDE
+-------------------------------------------------- */
+
 .auth-layout__content {
+  min-width: 0;
+  min-height: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8);
+
+  padding: clamp(
+    var(--space-6),
+    4vw,
+    var(--space-12)
+  );
+
+  overflow-y: auto;
+
   background: var(--color-surface);
 }
 
 .auth-layout__container {
   width: 100%;
-  max-width: 420px;
+  max-width: 520px;
+  margin: auto;
 }
 
-@media (max-width: 800px) {
+/* --------------------------------------------------
+   TABLET
+-------------------------------------------------- */
+
+@media (max-width: 1000px) {
   .auth-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: 55% 45%;
   }
 
   .auth-layout__brand {
-    min-height: 260px;
     padding: var(--space-8);
-  }
-
-  .auth-layout__brand-content {
-    margin: 0;
-  }
-
-  .auth-layout__brand h1 {
-    font-size: 2rem;
   }
 
   .auth-layout__content {
     padding: var(--space-6);
+  }
+
+  .auth-layout__container {
+    max-width: 480px;
+  }
+}
+
+/* --------------------------------------------------
+   MOBILE
+-------------------------------------------------- */
+
+@media (max-width: 800px) {
+  .auth-layout {
+    min-height: 100dvh;
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .auth-layout__brand {
+    min-height: 220px;
+    padding: var(--space-8);
+  }
+
+  .auth-layout__brand-content {
+    max-width: 600px;
+    margin: 0;
+  }
+
+  .auth-layout__logo {
+    width: 52px;
+    height: 52px;
+    margin-bottom: var(--space-4);
+  }
+
+  .auth-layout__brand h1 {
+    margin-bottom: var(--space-3);
+    font-size: 2.25rem;
+  }
+
+  .auth-layout__brand p {
+    font-size: 0.95rem;
+  }
+
+  .auth-layout__content {
+    min-height: auto;
+    padding: var(--space-8) var(--space-5);
+    overflow: visible;
+  }
+
+  .auth-layout__container {
+    max-width: 560px;
   }
 }
 </style>

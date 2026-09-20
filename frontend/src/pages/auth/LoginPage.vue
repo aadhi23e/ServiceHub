@@ -86,7 +86,7 @@ async function handleSubmit(): Promise<void> {
   <div class="auth-page">
     <div class="auth-brand">
       <RouterLink to="/" class="brand">
-        <span class="brand-mark">S</span>
+        <span class="brand-mark">S-</span>
         <span>ServiceHub</span>
       </RouterLink>
     </div>
@@ -197,53 +197,11 @@ async function handleSubmit(): Promise<void> {
 
 <style scoped>
 .auth-page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background:
-    radial-gradient(
-      circle at top left,
-      var(--color-primary-soft),
-      transparent 35%
-    ),
-    var(--color-background);
-}
-
-.auth-brand {
-  padding: var(--space-6);
-}
-
-.brand {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: var(--color-text-primary);
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
-.brand-mark {
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: var(--color-text-inverse);
-  font-weight: 800;
-}
-
-.auth-content {
-  flex: 1;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-8) var(--space-6);
 }
 
 .auth-card {
-  width: min(100%, 440px);
+  width: 100%;
   padding: var(--space-10);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
@@ -392,18 +350,10 @@ async function handleSubmit(): Promise<void> {
 }
 
 @media (max-width: 600px) {
-  .auth-brand {
-    padding: var(--space-4);
-  }
-
-  .auth-content {
-    padding: var(--space-6) var(--space-4);
-    align-items: flex-start;
-  }
-
   .auth-card {
     padding: var(--space-6);
     border-radius: var(--radius-lg);
   }
 }
 </style>
+
