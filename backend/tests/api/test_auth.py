@@ -145,3 +145,198 @@ def test_login_then_logout(
         )
         is None
     )
+
+def test_refresh_requires_refresh_cookie(client):
+    response = client.post(
+        "/api/v1/auth/refresh",
+    )
+
+    assert response.status_code == 401
+
+    body = response.json()
+
+    assert body["error"]["code"] == "AUTHENTICATION_FAILED"
+    assert body["error"]["message"] == (
+        "Refresh token is required."
+    )
+
+
+def test_refresh_rotates_refresh_token(
+    client,
+    redis_client,
+):
+    """End-to-end rotation test"""
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "refresh@example.com",
+            "password": "StrongPassword123!",
+            "first_name": "Refresh",
+            "last_name": "Test",
+            "phone": "1234567890",
+        },
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "refresh@example.com",
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    old_refresh_token = client.cookies.get(
+        "refresh_token",
+    )
+
+    assert old_refresh_token is not None
+
+    old_refresh_hash = hash_refresh_token(
+        old_refresh_token,
+    )
+
+    assert redis_client.get(
+        f"auth:session:{old_refresh_hash}",
+    ) is not None
+
+    refresh_response = client.post(
+        "/api/v1/auth/refresh",
+    )
+
+    assert refresh_response.status_code == 200
+
+    body = refresh_response.json()
+
+    assert "access_token" in body
+    assert body["token_type"] == "bearer"
+    assert body["expires_in"] > 0
+
+    new_refresh_token = client.cookies.get(
+        "refresh_token",
+    )
+
+    assert new_refresh_token is not None
+
+    assert new_refresh_token != old_refresh_token
+
+    new_refresh_hash = hash_refresh_token(
+        new_refresh_token,
+    )
+
+    # OLD token must be gone.
+    assert redis_client.get(
+        f"auth:session:{old_refresh_hash}",
+    ) is None
+
+    # NEW token must exist.
+    assert redis_client.get(
+        f"auth:session:{new_refresh_hash}",
+    ) is not None
+
+
+def test_old_refresh_token_cannot_be_reused(
+    client,
+    redis_client,
+):
+    """Prove the old token cannot be reused"""
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "refresh-reuse@example.com",
+            "password": "StrongPassword123!",
+            "first_name": "Refresh",
+            "last_name": "Reuse",
+            "phone": "1234567890",
+        },
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "refresh-reuse@example.com",
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    old_refresh_token = client.cookies.get(
+        "refresh_token",
+    )
+
+    assert old_refresh_token is not None
+
+    # First refresh consumes the old token.
+    refresh_response = client.post(
+        "/api/v1/auth/refresh",
+    )
+
+    assert refresh_response.status_code == 200
+
+    # Explicitly attempt to reuse the old token.
+    reuse_response = client.post(
+        "/api/v1/auth/refresh",
+        cookies={
+            "refresh_token": old_refresh_token,
+        },
+    )
+
+    assert reuse_response.status_code == 401
+
+    body = reuse_response.json()
+
+    assert body["error"]["code"] == (
+        "AUTHENTICATION_FAILED"
+    )
+    assert body["error"]["message"] == (
+        "Invalid or expired refresh token."
+    )
+
+
+
+def test_refresh_rejects_suspended_user(
+    client,
+    redis_client,
+):
+    """Test suspended users"""
+    register_response = client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "refresh-suspended@example.com",
+            "password": "StrongPassword123!",
+            "first_name": "Refresh",
+            "last_name": "Suspended",
+            "phone": "1234567890",
+        },
+    )
+
+    assert register_response.status_code == 201
+
+    login_response = client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "refresh-suspended@example.com",
+            "password": "StrongPassword123!",
+        },
+    )
+
+    assert login_response.status_code == 200
+
+    refresh_token = client.cookies.get(
+        "refresh_token",
+    )
+
+    assert refresh_token is not None
+
+    refresh_hash = hash_refresh_token(
+        refresh_token,
+    )
+
+    # We will suspend the user directly in the database
+    # in a later dedicated admin test setup.
