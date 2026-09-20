@@ -22,6 +22,7 @@ from app.schemas.auth import (
     LoginResponse,
     RegisterRequest,
     UserResponse,
+    TokenResponse,
 )
 
 
@@ -166,5 +167,65 @@ class AuthService:
         self.auth_session_repository.revoke(
             refresh_token_hash,
         )
-    # TODO:
-    # refresh()
+    def refresh(
+        self,
+        refresh_token: str,
+    ) -> tuple[TokenResponse, str]:
+        refresh_token_hash = hash_refresh_token(
+            refresh_token,
+        )
+
+        user_id = self.auth_session_repository.consume(
+            refresh_token_hash,
+        )
+
+        if user_id is None:
+            raise AuthenticationError(
+                message="Invalid or expired refresh token.",
+            )
+
+        user = self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise AuthenticationError(
+                message="Invalid or expired refresh token.",
+            )
+
+        if user.status != UserStatus.ACTIVE.value:
+            raise AuthenticationError(
+                message="Invalid or expired refresh token.",
+            )
+
+        access_token, expires_in = create_access_token(
+            user_id=user.id,
+            role=user.role,
+        )
+
+        new_refresh_token = generate_refresh_token()
+
+        new_refresh_token_hash = hash_refresh_token(
+            new_refresh_token,
+        )
+
+        settings = get_settings()
+
+        refresh_expires_in = (
+            settings.refresh_token_expire_days
+            * 24
+            * 60
+            * 60
+        )
+
+        self.auth_session_repository.create(
+            token_hash=new_refresh_token_hash,
+            user_id=user.id,
+            expires_in_seconds=refresh_expires_in,
+        )
+
+        response = TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=expires_in,
+        )
+
+        return response, new_refresh_token

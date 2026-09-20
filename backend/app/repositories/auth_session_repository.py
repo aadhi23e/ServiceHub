@@ -37,3 +37,13 @@ class AuthSessionRepository:
         self.redis.delete(
             self._key(token_hash),
         )
+
+    def consume(self, token_hash: str) -> int | None:
+        value = self.redis.getdel(
+            self._key(token_hash),
+        )
+
+        if value is None:
+            return None
+
+        return int(value)
