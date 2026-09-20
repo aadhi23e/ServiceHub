@@ -1,11 +1,10 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Response, status, Request
 
 from app.dependencies.auth import get_auth_service
 from app.services.auth_service import AuthService
-from fastapi import APIRouter, Depends, Response, status
 
 from app.core.rate_limit_dependencies import (
     login_rate_limit,
@@ -85,3 +84,34 @@ def register(
     )
 
     return RegisterResponse(user=user)
+
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def logout(
+    request: Request,
+    response: Response,
+    auth_service: Annotated[
+        AuthService,
+        Depends(get_auth_service),
+    ],
+) -> None:
+    refresh_token = request.cookies.get("refresh_token")
+
+    auth_service.logout(refresh_token)
+
+    settings = get_settings()
+
+    response.delete_cookie(
+        key="refresh_token",
+        path="/api/v1/auth",
+        secure=settings.environment == "production",
+        httponly=True,
+        samesite="lax",
+    )
+
+    logger.info(
+        "auth.logout.success",
+        success=True,
+    )

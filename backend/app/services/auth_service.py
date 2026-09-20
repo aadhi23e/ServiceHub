@@ -154,6 +154,17 @@ class AuthService:
         )
 
         return response, refresh_token
+
+    def logout(self, refresh_token: str | None) -> None:
+        if not refresh_token:
+            return
+
+        refresh_token_hash = hash_refresh_token(
+            refresh_token,
+        )
+
+        self.auth_session_repository.revoke(
+            refresh_token_hash,
+        )
     # TODO:
-    # logout()
     # refresh()
