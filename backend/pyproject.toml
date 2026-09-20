@@ -20,6 +20,7 @@ dependencies = [
     "python-json-logger",
     "argon2-cffi",
     "PyJWT",
+    "pydantic[email]",
 ]
 
 [project.optional-dependencies]

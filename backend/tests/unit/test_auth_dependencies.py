@@ -1,6 +1,6 @@
 import pytest
 
-from app.api.dependencies.auth import get_current_token
+from app.dependencies.auth import get_current_token
 from app.core.exceptions import AuthenticationError
 
 

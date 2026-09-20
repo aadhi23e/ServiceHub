@@ -1,3 +1,5 @@
+from fastapi import Depends
+
 from app.api.v1.auth import router
 from app.core.rate_limit_dependencies import (
     login_rate_limit,
@@ -6,46 +8,41 @@ from app.core.rate_limit_dependencies import (
 )
 
 
-def test_auth_router_contains_registration_rate_limit():
-    route = next(
+def get_route(path_suffix: str):
+    return next(
         route
         for route in router.routes
-        if route.path.endswith("/register")
+        if route.path.endswith(path_suffix)
     )
 
-    dependency_functions = {
-        dependency.call
+
+def get_dependency_functions(route):
+    return {
+        dependency.dependency
         for dependency in route.dependencies
+        if isinstance(dependency, Depends)
     }
+
+
+def test_auth_router_contains_registration_rate_limit():
+    route = get_route("/register")
+
+    dependency_functions = get_dependency_functions(route)
 
     assert registration_rate_limit in dependency_functions
 
 
 def test_auth_router_contains_login_rate_limit():
-    route = next(
-        route
-        for route in router.routes
-        if route.path.endswith("/login")
-    )
+    route = get_route("/login")
 
-    dependency_functions = {
-        dependency.call
-        for dependency in route.dependencies
-    }
+    dependency_functions = get_dependency_functions(route)
 
     assert login_rate_limit in dependency_functions
 
 
 def test_auth_router_contains_refresh_rate_limit():
-    route = next(
-        route
-        for route in router.routes
-        if route.path.endswith("/refresh")
-    )
+    route = get_route("/refresh")
 
-    dependency_functions = {
-        dependency.call
-        for dependency in route.dependencies
-    }
+    dependency_functions = get_dependency_functions(route)
 
     assert refresh_rate_limit in dependency_functions
