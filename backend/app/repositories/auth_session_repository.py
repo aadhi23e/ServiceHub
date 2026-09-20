@@ -17,16 +17,16 @@ class AuthSessionRepository:
         user_id: int,
         expires_in_seconds: int,
     ) -> None:
-        key = self._key(token_hash)
-
         self.redis.set(
-            key,
+            self._key(token_hash),
             str(user_id),
             ex=expires_in_seconds,
         )
 
     def get_user_id(self, token_hash: str) -> int | None:
-        value = self.redis.get(self._key(token_hash))
+        value = self.redis.get(
+            self._key(token_hash),
+        )
 
         if value is None:
             return None
@@ -34,4 +34,6 @@ class AuthSessionRepository:
         return int(value)
 
     def revoke(self, token_hash: str) -> None:
-        self.redis.delete(self._key(token_hash))
+        self.redis.delete(
+            self._key(token_hash),
+        )

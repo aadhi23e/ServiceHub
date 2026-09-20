@@ -9,16 +9,19 @@ class Settings(BaseSettings):
     database_url: str
     redis_url: str
     celery_broker_url: str
-    secret_key: str
-
-    access_token_expire_minutes: int = 15
-    refresh_token_expire_days: int = 30
 
     frontend_url: str = "http://localhost:5173"
     allowed_origins: str = "http://localhost:5173"
 
     log_level: str = "INFO"
 
+    # JWT
+    jwt_secret_key: str
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 15
+    refresh_token_expire_days: int = 30
+
+    # Rate limiting
     rate_limit_enabled: bool = True
 
     rate_limit_general_requests_per_minute: int = 100
@@ -27,11 +30,6 @@ class Settings(BaseSettings):
     rate_limit_refresh_requests_per_minute: int = 10
 
     rate_limit_window_seconds: int = 60
-
-    jwt_secret_key: str
-    jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 15
-    refresh_token_expire_days: int = 30
 
     model_config = SettingsConfigDict(
         env_file=".env.local",
