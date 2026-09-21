@@ -14,7 +14,9 @@ from app.core.exception_handlers import (
 )
 from app.core.exceptions import ServiceHubError
 from app.core.logging import configure_logging, logger
+
 from app.middleware.request_id import RequestIDMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 settings = get_settings()
 
@@ -41,7 +43,26 @@ app = FastAPI(
 )
 
 app.add_middleware(RequestIDMiddleware)
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=[
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+    ],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-CSRF-Token",
+    ],
+)
 app.add_exception_handler(
     ServiceHubError,
     servicehub_exception_handler,

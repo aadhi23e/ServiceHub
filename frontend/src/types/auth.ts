@@ -26,6 +26,10 @@ export interface RegisterRequest {
   role: UserRole;
 }
 
+export interface RegisterResponse {
+  user: AuthUser;
+}
+
 export interface TokenResponse {
   access_token: string;
   token_type: string;

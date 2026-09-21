@@ -1,7 +1,8 @@
 import { useAuthStore } from "../stores/auth";
 import { pinia } from "../app/pinia";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL;
 
 if (!API_BASE_URL) {
   throw new Error(
@@ -20,6 +21,7 @@ export interface ApiErrorBody {
     | string
     | ApiValidationError[]
     | unknown;
+
   code?: string;
   message?: string;
 }
@@ -72,6 +74,17 @@ export interface ApiRequestOptions
   extends RequestInit {
   skipAuth?: boolean;
 }
+
+/*
+ * Only ONE refresh operation can run at a time.
+ *
+ * If five requests receive 401 at the same time,
+ * requests 2-5 reuse this same Promise instead
+ * of creating four additional refresh requests.
+ */
+let refreshPromise:
+  | Promise<string | null>
+  | null = null;
 
 async function parseResponseBody(
   response: Response,
@@ -155,7 +168,7 @@ function extractApiErrorMessage(
       return "The request could not be processed.";
 
     case 401:
-      return "Your email or password is incorrect.";
+      return "Your session has expired. Please sign in again.";
 
     case 403:
       return "You do not have permission to perform this action.";
@@ -181,6 +194,118 @@ function extractApiErrorMessage(
   }
 }
 
+/**
+ * Refresh the access token.
+ *
+ * This function talks directly to /auth/refresh rather
+ * than using apiRequest(), otherwise a 401 from the
+ * refresh endpoint could recursively trigger another
+ * refresh.
+ */
+async function refreshAccessToken(): Promise<string | null> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/auth/refresh`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+      );
+
+      const body =
+        await parseResponseBody(response);
+
+      if (!response.ok) {
+        throw new ApiError(
+          extractApiErrorMessage(
+            response.status,
+            body,
+          ),
+          response.status,
+          extractApiErrorCode(body),
+          body,
+        );
+      }
+
+      if (
+        !body ||
+        typeof body !== "object" ||
+        !("access_token" in body)
+      ) {
+        throw new ApiError(
+          "The server returned an invalid authentication response.",
+          500,
+          "INVALID_AUTH_RESPONSE",
+          body,
+        );
+      }
+
+      const accessToken = (
+        body as {
+          access_token?: unknown;
+        }
+      ).access_token;
+
+      if (
+        typeof accessToken !== "string" ||
+        accessToken.length === 0
+      ) {
+        throw new ApiError(
+          "The server returned an invalid access token.",
+          500,
+          "INVALID_ACCESS_TOKEN",
+          body,
+        );
+      }
+
+      const authStore = useAuthStore(pinia);
+
+      authStore.setAccessToken(
+        accessToken,
+      );
+
+      return accessToken;
+    } catch {
+      const authStore = useAuthStore(pinia);
+
+      authStore.clearSession();
+
+      return null;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
+async function redirectToLogin(): Promise<void> {
+  /*
+   * Dynamic import avoids creating a static module cycle:
+   *
+   * router -> auth store -> api -> router
+   */
+  const { default: router } =
+    await import("../router");
+
+  if (
+    router.currentRoute.value.name !==
+    "login"
+  ) {
+    await router.replace({
+      name: "login",
+    });
+  }
+}
+
 export async function apiRequest<T>(
   path: string,
   options: ApiRequestOptions = {},
@@ -191,7 +316,17 @@ export async function apiRequest<T>(
     ...requestInit
   } = options;
 
-  const requestHeaders = new Headers(headers);
+  const authStore = useAuthStore(pinia);
+
+  /*
+   * Keep a copy of the original request configuration.
+   *
+   * Request bodies such as JSON strings can be reused,
+   * unlike a consumed Request object.
+   */
+  const requestHeaders = new Headers(
+    headers,
+  );
 
   if (
     requestInit.body &&
@@ -203,30 +338,41 @@ export async function apiRequest<T>(
     );
   }
 
-  const authStore = useAuthStore(pinia);
+  async function executeRequest(
+    token: string | null,
+  ): Promise<Response> {
+    const currentHeaders =
+      new Headers(requestHeaders);
 
-  if (
-    !skipAuth &&
-    authStore.accessToken
-  ) {
-    requestHeaders.set(
-      "Authorization",
-      `Bearer ${authStore.accessToken}`,
+    if (
+      !skipAuth &&
+      token
+    ) {
+      currentHeaders.set(
+        "Authorization",
+        `Bearer ${token}`,
+      );
+    } else {
+      currentHeaders.delete(
+        "Authorization",
+      );
+    }
+
+    return fetch(
+      `${API_BASE_URL}${path}`,
+      {
+        ...requestInit,
+        headers: currentHeaders,
+        credentials: "include",
+      },
     );
   }
 
   let response: Response;
 
   try {
-    response = await fetch(
-      `${API_BASE_URL}${path}`,
-      {
-        ...requestInit,
-        headers: requestHeaders,
-
-        // Required for the HttpOnly refresh cookie.
-        credentials: "include",
-      },
+    response = await executeRequest(
+      authStore.accessToken,
     );
   } catch {
     throw new ApiError(
@@ -234,6 +380,50 @@ export async function apiRequest<T>(
       0,
       "NETWORK_ERROR",
     );
+  }
+
+  /*
+   * Only authenticated normal API requests should
+   * trigger automatic refresh.
+   *
+   * Login/register/refresh/logout requests use skipAuth.
+   */
+  if (
+    response.status === 401 &&
+    !skipAuth
+  ) {
+    const newAccessToken =
+      await refreshAccessToken();
+
+    /*
+     * Refresh token is invalid/expired/revoked.
+     *
+     * The user's authenticated session is over.
+     */
+    if (!newAccessToken) {
+      await redirectToLogin();
+
+      throw new ApiError(
+        "Your session has expired. Please sign in again.",
+        401,
+        "SESSION_EXPIRED",
+      );
+    }
+
+    /*
+     * Retry the original request exactly once.
+     */
+    try {
+      response = await executeRequest(
+        newAccessToken,
+      );
+    } catch {
+      throw new ApiError(
+        "Unable to connect to ServiceHub. Please check your connection and try again.",
+        0,
+        "NETWORK_ERROR",
+      );
+    }
   }
 
   const body =

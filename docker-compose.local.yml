@@ -3,48 +3,99 @@ services:
     image: postgres:18
     container_name: servicehub-postgres
     restart: unless-stopped
+
     environment:
       POSTGRES_DB: servicehub
       POSTGRES_USER: servicehub
       POSTGRES_PASSWORD: servicehub
+
     ports:
       - "5432:5432"
+
     volumes:
       - postgres_data:/var/lib/postgresql
+
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U servicehub -d servicehub"]
-      interval: 5s
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U servicehub -d servicehub"
+        ]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 10s
+
 
   redis:
     image: redis:8-alpine
     container_name: servicehub-redis
     restart: unless-stopped
+
     ports:
       - "6379:6379"
+
     volumes:
       - redis_data:/data
+
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+
+  migrate:
+    build:
+      context: ./backend
+
+    container_name: servicehub-migrate
+
+    env_file:
+      - ./backend/.env.docker
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    command:
+      [
+        "alembic",
+        "upgrade",
+        "head"
+      ]
+
+    volumes:
+      - ./backend:/app
+
 
   backend:
     build:
       context: ./backend
+
     container_name: servicehub-backend
     restart: unless-stopped
+    init: true
+
     env_file:
       - ./backend/.env.docker
+
     ports:
       - "8000:8000"
+
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
       redis:
         condition: service_healthy
+
     command:
       [
         "uvicorn",
@@ -55,36 +106,40 @@ services:
         "8000",
         "--reload"
       ]
+
     volumes:
       - ./backend:/app
 
-  frontend:
-    build:
-      context: ./frontend
-    container_name: servicehub-frontend
-    restart: unless-stopped
-    env_file:
-      - ./frontend/.env.local
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-    volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; response = urllib.request.urlopen('http://localhost:8000/api/v1/health/live', timeout=3); raise SystemExit(0 if response.status == 200 else 1)\""
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 
   celery-worker:
     build:
       context: ./backend
+
     container_name: servicehub-celery-worker
     restart: unless-stopped
+    init: true
+
     env_file:
       - ./backend/.env.docker
+
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
       redis:
         condition: service_healthy
+
     command:
       [
         "celery",
@@ -93,8 +148,54 @@ services:
         "worker",
         "--loglevel=INFO"
       ]
+
     volumes:
       - ./backend:/app
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "celery -A app.workers.celery_app.celery_app inspect ping -d celery@$$HOSTNAME"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+
+
+  frontend:
+    build:
+      context: ./frontend
+
+    container_name: servicehub-frontend
+    restart: unless-stopped
+    init: true
+
+    env_file:
+      - ./frontend/.env.local
+
+    ports:
+      - "5173:5173"
+
+    depends_on:
+      backend:
+        condition: service_healthy
+
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:5173').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data:

@@ -8,7 +8,7 @@ import type {
   LoginResponse,
   RefreshResponse,
   RegisterRequest,
-  TokenResponse,
+  RegisterResponse,
 } from "../types/auth";
 
 export function login(
@@ -26,8 +26,8 @@ export function login(
 
 export function register(
   payload: RegisterRequest,
-): Promise<AuthUser> {
-  return apiRequest<AuthUser>(
+): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>(
     "/auth/register",
     {
       method: "POST",
@@ -61,6 +61,7 @@ export function logout(): Promise<void> {
     "/auth/logout",
     {
       method: "POST",
+      skipAuth: true,
     },
   );
 }

@@ -139,6 +139,24 @@ const router = createRouter({
   routes,
 });
 
+function getDashboardRoute(
+  role: UserRole | null,
+) {
+  switch (role) {
+    case "CUSTOMER":
+      return { name: "customer" };
+
+    case "PROVIDER":
+      return { name: "provider" };
+
+    case "ADMIN":
+      return { name: "admin" };
+
+    default:
+      return { name: "login" };
+  }
+}
+
 // ─────────────────────────────────────────────
 // Navigation guard
 // ─────────────────────────────────────────────
@@ -146,70 +164,41 @@ const router = createRouter({
 router.beforeEach((to) => {
   const authStore = useAuthStore();
 
-  const requiresAuth = to.meta.requiresAuth === true;
-  const requiresGuest = to.meta.requiresGuest === true;
+  const requiresAuth =
+    to.meta.requiresAuth === true;
 
-  const requiredRole = to.meta.role as UserRole | undefined;
+  const requiresGuest =
+    to.meta.requiresGuest === true;
 
-  const isPreview =
-    isDevelopment &&
-    to.query.preview === "1";
+  const requiredRole =
+    to.meta.role as UserRole | undefined;
 
-  // Development-only UI preview.
-  if (isPreview) {
-    return true;
+  if (
+    requiresAuth &&
+    !authStore.isAuthenticated
+  ) {
+    return { name: "login" };
   }
 
-  // Protected route requires authentication.
-  if (requiresAuth && !authStore.isAuthenticated) {
-    return {
-      name: "login",
-    };
+  if (
+    requiresGuest &&
+    authStore.isAuthenticated
+  ) {
+    return getDashboardRoute(
+      authStore.role,
+    );
   }
 
-  // Authenticated users should not access guest-only pages.
-  if (requiresGuest && authStore.isAuthenticated) {
-    if (authStore.role === "CUSTOMER") {
-      return { name: "customer" };
-    }
-
-    if (authStore.role === "PROVIDER") {
-      return { name: "provider" };
-    }
-
-    if (authStore.role === "ADMIN") {
-      return { name: "admin" };
-    }
-
-    return {
-      name: "login",
-    };
-  }
-
-  // Authenticated user must have the required role.
   if (
     requiresAuth &&
     requiredRole &&
     authStore.role !== requiredRole
   ) {
-    if (authStore.role === "CUSTOMER") {
-      return { name: "customer" };
-    }
-
-    if (authStore.role === "PROVIDER") {
-      return { name: "provider" };
-    }
-
-    if (authStore.role === "ADMIN") {
-      return { name: "admin" };
-    }
-
-    return {
-      name: "login",
-    };
+    return getDashboardRoute(
+      authStore.role,
+    );
   }
 
   return true;
 });
-
 export default router;
