@@ -65,6 +65,17 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
+      // Customer Profile
+      {
+        path: "profile",
+        name: "customer-profile",
+        component: () => import("../pages/profile/ProfileView.vue"),
+        meta: {
+          title: "Profile",
+          description: "Manage your personal information and account details.",
+        },
+      },
+
       // Customer Bookings
       {
         path: "bookings",
@@ -142,6 +153,15 @@ const routes: RouteRecordRaw[] = [
           title: "Booking Details",
         },
       },
+      {
+        path: "profile",
+        name: "provider-profile",
+        component: () => import("../pages/profile/ProfileView.vue"),
+        meta: {
+          title: "Profile",
+          description: "Manage your personal information and account details.",
+        },
+      },
     ],
   },
 
@@ -185,6 +205,15 @@ const routes: RouteRecordRaw[] = [
         component: () => import("../pages/bookings/BookingDetailView.vue"),
         meta: {
           title: "Booking Details",
+        },
+      },
+      {
+        path: "profile",
+        name: "provider-profile",
+        component: () => import("../pages/profile/ProfileView.vue"),
+        meta: {
+          title: "Profile",
+          description: "Manage your personal information and account details.",
         },
       },
     ],
@@ -276,5 +305,12 @@ router.beforeEach((to) => {
 
   return true;
 });
-
+if(isDevelopment == true){
+  console.table(
+    router.getRoutes().map((route) => ({
+      name: route.name,
+      path: route.path,
+    })),
+  );
+}
 export default router;
