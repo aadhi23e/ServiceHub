@@ -114,7 +114,8 @@ function closeMobileSidebar(): void {
   position: sticky;
   top: 0;
   z-index: 30;
-  min-height: 76px;
+  height: 76px;
+  /* min-height: 76px; */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -204,7 +205,7 @@ function closeMobileSidebar(): void {
 
 .app-shell__content {
   min-height: calc(100vh - 76px);
-  padding: var(--space-8);
+  padding: var(--space-6);
 }
 
 @media (max-width: 1100px) {
@@ -214,7 +215,7 @@ function closeMobileSidebar(): void {
   }
 
   .app-shell__content {
-    padding: var(--space-6);
+    padding: var(--space-4);
   }
 
   .app-topbar__actions {
@@ -258,7 +259,7 @@ function closeMobileSidebar(): void {
 
   .app-shell__content {
     min-height: calc(100vh - 68px);
-    padding: var(--space-4);
+    padding: var(--space-2);
   }
 }
 </style>
