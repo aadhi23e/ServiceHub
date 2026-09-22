@@ -2,8 +2,10 @@
 import { computed, ref } from "vue";
 
 import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 const open = ref(false);
 
@@ -38,6 +40,15 @@ function toggleMenu(): void {
 
 function closeMenu(): void {
   open.value = false;
+}
+
+async function signout(): Promise<void> {
+  try {
+    await authStore.signout();
+  } finally {
+    open.value = false;
+    await router.replace({ name: "login" });
+  }
 }
 </script>
 
@@ -100,7 +111,7 @@ function closeMenu(): void {
         type="button"
         class="user-menu__item user-menu__item--danger"
         role="menuitem"
-        @click="closeMenu"
+        @click="signout"
       >
         Sign out
       </button>

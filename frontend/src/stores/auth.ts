@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 import {
   getCurrentUser,
   refresh,
+  logout,
 } from "../api/auth";
 
 import type { AuthUser } from "../types/auth";
@@ -103,6 +104,24 @@ export const useAuthStore = defineStore(
         initialized.value = true;
       }
     }
+    async function signout(): Promise<void> {
+      console.log("AUTH STORE SIGNOUT START");
+
+      try {
+        await logout();
+
+        console.log("AUTH STORE SIGNOUT SUCCESS");
+      } catch (error) {
+        console.error(
+          "AUTH STORE SIGNOUT ERROR",
+          error,
+        );
+
+        throw error;
+      } finally {
+        clearSession();
+      }
+    }
 
     return {
       user,
@@ -118,6 +137,7 @@ export const useAuthStore = defineStore(
       setAccessToken,
       clearSession,
       initialize,
+      signout
     };
   },
 );

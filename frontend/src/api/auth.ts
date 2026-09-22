@@ -57,6 +57,8 @@ export function getCurrentUser(): Promise<AuthUser> {
 }
 
 export function logout(): Promise<void> {
+  console.log("API LOGOUT CALLED");
+
   return apiRequest<void>(
     "/auth/logout",
     {
