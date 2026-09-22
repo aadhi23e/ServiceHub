@@ -62,7 +62,8 @@ class AuthService:
             phone=request.phone.strip()
             if request.phone
             else None,
-            role=UserRole.CUSTOMER.value,
+#            role=UserRole.CUSTOMER.value, #TODO
+            role=UserRole.ADMIN.value,
             status=UserStatus.ACTIVE.value,
         )
 
