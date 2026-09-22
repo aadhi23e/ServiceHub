@@ -4,7 +4,6 @@ import { RouterView, useRoute } from "vue-router";
 
 import AppSidebar from "../components/AppSidebar.vue";
 import NotificationButton from "../components/NotificationButton.vue";
-import ThemeToggle from "../components/ThemeToggle.vue";
 import UserMenu from "../components/UserMenu.vue";
 
 import { useAuthStore } from "../stores/auth";
@@ -50,20 +49,12 @@ function closeMobileSidebar(): void {
 
 <template>
   <div class="app-shell">
-    <AppSidebar
-      :mobile-open="mobileSidebarOpen"
-      @close="closeMobileSidebar"
-    />
+    <AppSidebar :mobile-open="mobileSidebarOpen" @close="closeMobileSidebar" />
 
     <div class="app-shell__main">
       <header class="app-topbar">
         <div class="app-topbar__left">
-          <button
-            type="button"
-            class="mobile-menu-button"
-            aria-label="Open navigation"
-            @click="toggleMobileSidebar"
-          >
+          <button type="button" class="mobile-menu-button" aria-label="Open navigation" @click="toggleMobileSidebar">
             <span />
             <span />
             <span />
@@ -81,9 +72,7 @@ function closeMobileSidebar(): void {
         </div>
 
         <div class="app-topbar__actions">
-          <ThemeToggle />
-
-          <NotificationButton :unread-count="0" />
+          <NotificationButton :unread-count="1" />
 
           <div class="topbar-divider" />
 
@@ -121,11 +110,9 @@ function closeMobileSidebar(): void {
   justify-content: space-between;
   gap: var(--space-6);
   padding: var(--space-3) var(--space-8);
-  background: color-mix(
-    in srgb,
-    var(--color-surface) 94%,
-    transparent
-  );
+  background: color-mix(in srgb,
+      var(--color-surface) 94%,
+      transparent);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(12px);
 }

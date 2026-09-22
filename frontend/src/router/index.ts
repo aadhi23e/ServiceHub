@@ -190,6 +190,24 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  {
+    path: "/settings",
+    component: () => import("../layouts/DashboardLayout.vue"),
+    meta: {
+      requiresAuth: true,
+    },
+    children: [
+      {
+        path: "",
+        name: "settings",
+        component: () => import("../pages/settings/SettingsView.vue"),
+        meta: {
+          title: "Settings",
+          description: "Manage your ServiceHub preferences.",
+        },
+      },
+    ],
+  },
   // ─────────────────────────────────────────────
   // Fallback
   // ─────────────────────────────────────────────
