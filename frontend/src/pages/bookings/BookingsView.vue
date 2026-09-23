@@ -109,7 +109,7 @@ onMounted(loadBookings);
         v-if="isCustomer"
         type="button"
         class="bookings-page__primary-button"
-        @click="router.push({ name: 'booking-create' })"
+        @click="router.push({ name: 'customer-booking-create' })"
       >
         Book a service
       </button>
