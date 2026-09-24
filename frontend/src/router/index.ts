@@ -116,55 +116,92 @@ const routes: RouteRecordRaw[] = [
   // ─────────────────────────────────────────────
 
   {
-    path: "/provider",
-    component: () => import("../layouts/DashboardLayout.vue"),
-    meta: {
-      requiresAuth: true,
-      role: "PROVIDER",
-    },
-    children: [
-      {
-        path: "",
-        name: "provider",
-        component: () => import("../pages/provider/ProviderDashboard.vue"),
-        meta: {
-          title: "Provider Dashboard",
-          description: "Manage your services, availability, and bookings.",
-        },
-      },
-
-      // Provider Bookings
-      {
-        path: "bookings",
-        name: "provider-bookings",
-        component: () => import("../pages/bookings/BookingsView.vue"),
-        meta: {
-          title: "Bookings",
-          description: "Manage your customer bookings.",
-        },
-      },
-
-      // Provider Booking Detail
-      {
-        path: "bookings/:bookingId",
-        name: "provider-booking-detail",
-        component: () => import("../pages/bookings/BookingDetailView.vue"),
-        meta: {
-          title: "Booking Details",
-        },
-      },
-      {
-        path: "profile",
-        name: "provider-profile",
-        component: () => import("../pages/profile/ProfileView.vue"),
-        meta: {
-          title: "Profile",
-          description: "Manage your personal information and account details.",
-        },
-      },
-    ],
+  path: "/provider",
+  component: () => import("../layouts/DashboardLayout.vue"),
+  meta: {
+    requiresAuth: true,
+    role: "PROVIDER",
   },
+  children: [
+    {
+      path: "",
+      name: "provider",
+      component: () => import("../pages/provider/ProviderDashboard.vue"),
+      meta: {
+        title: "Provider Dashboard",
+        description: "Manage your services, availability, and bookings.",
+      },
+    },
 
+    // Provider Bookings
+    {
+      path: "bookings",
+      name: "provider-bookings",
+      component: () => import("../pages/bookings/BookingsView.vue"),
+      meta: {
+        title: "Bookings",
+        description: "Manage your customer bookings.",
+      },
+    },
+
+    // Provider Booking Detail
+    {
+      path: "bookings/:bookingId",
+      name: "provider-booking-detail",
+      component: () => import("../pages/bookings/BookingDetailView.vue"),
+      meta: {
+        title: "Booking Details",
+      },
+    },
+
+    // Provider Profile
+    {
+      path: "profile",
+      name: "provider-profile",
+      component: () => import("../pages/profile/ProfileView.vue"),
+      meta: {
+        title: "Profile",
+        description: "Manage your personal information and account details.",
+      },
+    },
+
+    // Provider Services
+    {
+      path: "services",
+      name: "provider-services",
+      component: () =>
+        import("../pages/provider/ProviderServicesView.vue"),
+      meta: {
+        title: "Services",
+        description: "Manage the services you offer to customers.",
+      },
+    },
+
+    // Create Service
+    {
+      path: "services/new",
+      name: "provider-service-create",
+      component: () =>
+        import("../pages/provider/ProviderServiceCreateView.vue"),
+      meta: {
+        title: "Create Service",
+        description: "Create a new service for your customers.",
+      },
+    },
+
+    // Edit Service
+    {
+      path: "services/:serviceId",
+      name: "provider-service-edit",
+      component: () =>
+        import("../pages/provider/ProviderServiceEditView.vue"),
+      meta: {
+        title: "Edit Service",
+        description: "Update your service.",
+      },
+    },
+  ],
+},
   // ─────────────────────────────────────────────
   // Admin
   // ─────────────────────────────────────────────

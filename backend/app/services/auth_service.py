@@ -62,8 +62,8 @@ class AuthService:
             phone=request.phone.strip()
             if request.phone
             else None,
-#            role=UserRole.CUSTOMER.value, #TODO
-            role=UserRole.ADMIN.value,
+        #    role=UserRole.CUSTOMER.value, #TODO
+            role=UserRole.PROVIDER.value,
             status=UserStatus.ACTIVE.value,
         )
 
@@ -168,6 +168,7 @@ class AuthService:
         self.auth_session_repository.revoke(
             refresh_token_hash,
         )
+
     def refresh(
         self,
         refresh_token: str,
@@ -230,3 +231,4 @@ class AuthService:
         )
 
         return response, new_refresh_token
+    

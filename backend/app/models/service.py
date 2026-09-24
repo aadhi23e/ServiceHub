@@ -22,7 +22,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.booking import Booking
-    from app.models.category import ServiceCategory
+    from app.models.service_category import ServiceCategory
     from app.models.provider import ProviderProfile
 
 class Service(Base):
