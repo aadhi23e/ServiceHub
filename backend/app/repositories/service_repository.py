@@ -12,9 +12,7 @@ class ServiceRepository:
         self,
         service_id: int,
     ) -> Service | None:
-        statement = select(Service).where(
-            Service.id == service_id
-        )
+        statement = select(Service).where(Service.id == service_id)
 
         return self.db.scalar(statement)
 
@@ -47,10 +45,10 @@ class ServiceRepository:
 
         items = list(self.db.scalars(statement).all())
 
-        count_statement = select(
-            func.count()
-        ).select_from(Service).where(
-            Service.provider_id == provider_id
+        count_statement = (
+            select(func.count())
+            .select_from(Service)
+            .where(Service.provider_id == provider_id)
         )
 
         total = self.db.scalar(count_statement) or 0

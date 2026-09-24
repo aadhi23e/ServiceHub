@@ -17,6 +17,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.service import Service
 
+
 class ServiceCategory(Base):
     __tablename__ = "service_categories"
 

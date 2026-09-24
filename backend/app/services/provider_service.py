@@ -23,7 +23,7 @@ class ProviderService:
         request: ProviderUpdateRequest,
         user_id: int,
     ) -> ProviderProfile:
-        
+
         provider = ProviderProfile(
             user_id=user_id,
             business_name=request.business_name,
@@ -40,10 +40,9 @@ class ProviderService:
             self.db.refresh(provider)
         except InterruptedError as exc:
             self.db.rollback()
-        
 
         return provider
-    
+
     def update_provider(
         self,
         provider: ProviderProfile,

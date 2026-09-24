@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { RouterLink, useRoute } from "vue-router";
+import { computed } from 'vue';
+import { RouterLink, useRoute } from 'vue-router';
 
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from '../stores/auth';
 
 interface NavigationItem {
   label: string;
@@ -23,100 +23,100 @@ const route = useRoute();
 
 const navigation = computed<NavigationItem[]>(() => {
   switch (authStore.role) {
-    case "CUSTOMER":
+    case 'CUSTOMER':
       return [
         {
-          label: "Dashboard",
-          to: "/customer",
-          icon: "⌂",
+          label: 'Dashboard',
+          to: '/customer',
+          icon: '⌂',
         },
         {
-          label: "Find Services",
-          to: "/customer/services",
-          icon: "⌕",
+          label: 'Find Services',
+          to: '/customer/services',
+          icon: '⌕',
         },
         {
-          label: "My Bookings",
-          to: "/customer/bookings",
-          icon: "▣",
+          label: 'My Bookings',
+          to: '/customer/bookings',
+          icon: '▣',
         },
         {
-          label: "Notifications",
-          to: "/customer/notifications",
-          icon: "◉",
+          label: 'Notifications',
+          to: '/customer/notifications',
+          icon: '◉',
         },
         {
-          label: "Profile",
-          to: "/customer/profile",
-          icon: "◎",
+          label: 'Profile',
+          to: '/customer/profile',
+          icon: '◎',
         },
       ];
 
-    case "PROVIDER":
+    case 'PROVIDER':
       return [
         {
-          label: "Dashboard",
-          to: "/provider",
-          icon: "⌂",
+          label: 'Dashboard',
+          to: '/provider',
+          icon: '⌂',
         },
         {
-          label: "My Services",
-          to: "/provider/services",
-          icon: "◇",
+          label: 'My Services',
+          to: '/provider/services',
+          icon: '◇',
         },
         {
-          label: "Availability",
-          to: "/provider/availability",
-          icon: "◷",
+          label: 'Availability',
+          to: '/provider/availability',
+          icon: '◷',
         },
         {
-          label: "Bookings",
-          to: "/provider/bookings",
-          icon: "▣",
+          label: 'Bookings',
+          to: '/provider/bookings',
+          icon: '▣',
         },
         {
-          label: "Notifications",
-          to: "/provider/notifications",
-          icon: "◉",
+          label: 'Notifications',
+          to: '/provider/notifications',
+          icon: '◉',
         },
         {
-          label: "Profile",
-          to: "/provider/profile",
-          icon: "◎",
+          label: 'Profile',
+          to: '/provider/profile',
+          icon: '◎',
         },
       ];
 
-    case "ADMIN":
+    case 'ADMIN':
       return [
         {
-          label: "Dashboard",
-          to: "/admin",
-          icon: "⌂",
+          label: 'Dashboard',
+          to: '/admin',
+          icon: '⌂',
         },
         {
-          label: "Users",
-          to: "/admin/users",
-          icon: "◎",
+          label: 'Users',
+          to: '/admin/users',
+          icon: '◎',
         },
         {
-          label: "Providers",
-          to: "/admin/providers",
-          icon: "◇",
+          label: 'Providers',
+          to: '/admin/providers',
+          icon: '◇',
         },
         {
-          label: "Bookings",
-          to: "/admin/bookings",
-          icon: "▣",
+          label: 'Bookings',
+          to: '/admin/bookings',
+          icon: '▣',
         },
         {
-          label: "Categories",
-          to: "/admin/categories",
-          icon: "▦",
+          label: 'Categories',
+          to: '/admin/categories',
+          icon: '▦',
         },
         {
-          label: "Audit Logs",
-          to: "/admin/audit-logs",
-          icon: "≡",
+          label: 'Audit Logs',
+          to: '/admin/audit-logs',
+          icon: '≡',
         },
       ];
 
@@ -127,19 +127,19 @@ const navigation = computed<NavigationItem[]>(() => {
 
 const roleLabel = computed(() => {
   switch (authStore.role) {
-    case "CUSTOMER":
-      return "Customer";
-    case "PROVIDER":
-      return "Provider";
-    case "ADMIN":
-      return "Administrator";
+    case 'CUSTOMER':
+      return 'Customer';
+    case 'PROVIDER':
+      return 'Provider';
+    case 'ADMIN':
+      return 'Administrator';
     default:
-      return "User";
+      return 'User';
   }
 });
 
 function isActive(item: NavigationItem): boolean {
-  if (item.to === "/customer" || item.to === "/provider" || item.to === "/admin") {
+  if (item.to === '/customer' || item.to === '/provider' || item.to === '/admin') {
     return route.path === item.to;
   }
 
@@ -147,27 +147,16 @@ function isActive(item: NavigationItem): boolean {
 }
 
 function closeMobileSidebar(): void {
-  emit("close");
+  emit('close');
 }
 </script>
 
 <template>
-  <div
-    v-if="props.mobileOpen"
-    class="sidebar-backdrop"
-    @click="closeMobileSidebar"
-  />
+  <div v-if="props.mobileOpen" class="sidebar-backdrop" @click="closeMobileSidebar" />
 
-  <aside
-    class="app-sidebar"
-    :class="{ 'app-sidebar--mobile-open': props.mobileOpen }"
-  >
+  <aside class="app-sidebar" :class="{ 'app-sidebar--mobile-open': props.mobileOpen }">
     <div class="app-sidebar__header">
-      <RouterLink
-        to="/"
-        class="app-brand"
-        @click="closeMobileSidebar"
-      >
+      <RouterLink to="/" class="app-brand" @click="closeMobileSidebar">
         <span class="app-brand__logo">SH</span>
 
         <span class="app-brand__text">
@@ -186,10 +175,7 @@ function closeMobileSidebar(): void {
       </button>
     </div>
 
-    <nav
-      class="app-sidebar__navigation"
-      aria-label="Main navigation"
-    >
+    <nav class="app-sidebar__navigation" aria-label="Main navigation">
       <RouterLink
         v-for="item in navigation"
         :key="item.to"
@@ -200,10 +186,7 @@ function closeMobileSidebar(): void {
         }"
         @click="closeMobileSidebar"
       >
-        <span
-          class="sidebar-item__icon"
-          aria-hidden="true"
-        >
+        <span class="sidebar-item__icon" aria-hidden="true">
           {{ item.icon }}
         </span>
 

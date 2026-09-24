@@ -18,7 +18,6 @@ from app.schemas.user import (
     UserUpdateRequest,
 )
 
-
 router = APIRouter(
     prefix="/users",
     tags=["users"],
@@ -91,10 +90,7 @@ def get_user(
     user_repository = UserRepository(db)
 
     # A non-admin user can only view their own account.
-    if (
-        current_user.role != UserRole.ADMIN.value
-        and current_user.id != user_id
-    ):
+    if current_user.role != UserRole.ADMIN.value and current_user.id != user_id:
         raise AuthorizationError(
             message="You do not have permission to access this user.",
             code="USER_ACCESS_FORBIDDEN",

@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import {
-  useThemeStore,
-  type ThemeMode,
-} from "../stores/theme";
+import { useThemeStore, type ThemeMode } from '../stores/theme';
 
 const themeStore = useThemeStore();
 
@@ -14,28 +11,26 @@ const options: Array<{
   icon: string;
 }> = [
   {
-    value: "system",
-    label: "System",
-    icon: "◐",
+    value: 'system',
+    label: 'System',
+    icon: '◐',
   },
   {
-    value: "light",
-    label: "Light",
-    icon: "☀",
+    value: 'light',
+    label: 'Light',
+    icon: '☀',
   },
   {
-    value: "dark",
-    label: "Dark",
-    icon: "☾",
+    value: 'dark',
+    label: 'Dark',
+    icon: '☾',
   },
 ];
 
 const activeLabel = computed(() => {
-  const activeOption = options.find(
-    (option) => option.value === themeStore.mode,
-  );
+  const activeOption = options.find((option) => option.value === themeStore.mode);
 
-  return activeOption?.label ?? "System";
+  return activeOption?.label ?? 'System';
 });
 
 function selectTheme(mode: ThemeMode): void {
@@ -45,23 +40,16 @@ function selectTheme(mode: ThemeMode): void {
 
 <template>
   <div class="theme-toggle">
-    <span class="theme-toggle__label">
-      Theme
-    </span>
+    <span class="theme-toggle__label"> Theme </span>
 
-    <div
-      class="theme-toggle__options"
-      role="group"
-      aria-label="Theme selection"
-    >
+    <div class="theme-toggle__options" role="group" aria-label="Theme selection">
       <button
         v-for="option in options"
         :key="option.value"
         type="button"
         class="theme-toggle__option"
         :class="{
-          'theme-toggle__option--active':
-            themeStore.mode === option.value,
+          'theme-toggle__option--active': themeStore.mode === option.value,
         }"
         :aria-label="`Use ${option.label} theme`"
         :aria-pressed="themeStore.mode === option.value"

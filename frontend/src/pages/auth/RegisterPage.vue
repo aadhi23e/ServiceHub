@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { register } from "../../api/auth";
-import { ApiError } from "../../api/client";
-import type { UserRole } from "../../types/router";
-import { useAuthStore } from "../../stores/auth";
+import { register } from '../../api/auth';
+import { ApiError } from '../../api/client';
+import type { UserRole } from '../../types/router';
+import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const firstName = ref("");
-const lastName = ref("");
-const email = ref("");
-const phone = ref("");
-const password = ref("");
-const confirmPassword = ref("");
+const firstName = ref('');
+const lastName = ref('');
+const email = ref('');
+const phone = ref('');
+const password = ref('');
+const confirmPassword = ref('');
 
-const role = ref<UserRole>("CUSTOMER");
+const role = ref<UserRole>('CUSTOMER');
 
 const isSubmitting = ref(false);
-const errorMessage = ref("");
+const errorMessage = ref('');
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
 
@@ -38,50 +38,45 @@ const canSubmit = computed(() => {
 
 function getDashboardRoute(selectedRole: UserRole) {
   switch (selectedRole) {
-    case "CUSTOMER":
-      return { name: "customer" };
+    case 'CUSTOMER':
+      return { name: 'customer' };
 
-    case "PROVIDER":
-      return { name: "provider" };
+    case 'PROVIDER':
+      return { name: 'provider' };
 
-    case "ADMIN":
-      return { name: "admin" };
+    case 'ADMIN':
+      return { name: 'admin' };
 
     default:
-      return { name: "login" };
+      return { name: 'login' };
   }
 }
 
 async function handleSubmit(): Promise<void> {
-  errorMessage.value = "";
+  errorMessage.value = '';
 
   if (!firstName.value.trim()) {
-    errorMessage.value =
-      "Please enter your first name.";
+    errorMessage.value = 'Please enter your first name.';
     return;
   }
 
   if (!lastName.value.trim()) {
-    errorMessage.value =
-      "Please enter your last name.";
+    errorMessage.value = 'Please enter your last name.';
     return;
   }
 
   if (!email.value.trim()) {
-    errorMessage.value =
-      "Please enter your email address.";
+    errorMessage.value = 'Please enter your email address.';
     return;
   }
 
   if (password.value.length < 8) {
-    errorMessage.value =
-      "Password must be at least 8 characters.";
+    errorMessage.value = 'Password must be at least 8 characters.';
     return;
   }
 
   if (password.value !== confirmPassword.value) {
-    errorMessage.value =
-      "Passwords do not match.";
+    errorMessage.value = 'Passwords do not match.';
     return;
   }
 
@@ -107,14 +102,13 @@ async function handleSubmit(): Promise<void> {
     void user;
 
     await router.replace({
-      name: "login",
+      name: 'login',
     });
   } catch (error) {
     if (error instanceof ApiError) {
       errorMessage.value = error.message;
     } else {
-      errorMessage.value =
-        "Something went wrong. Please try again.";
+      errorMessage.value = 'Something went wrong. Please try again.';
     }
   } finally {
     isSubmitting.value = false;
@@ -136,28 +130,17 @@ async function handleSubmit(): Promise<void> {
         <div class="auth-header">
           <h1>Create your account</h1>
 
-          <p>
-            Join ServiceHub and get started.
-          </p>
+          <p>Join ServiceHub and get started.</p>
         </div>
 
-        <form
-          class="auth-form"
-          @submit.prevent="handleSubmit"
-        >
-          <div
-            v-if="errorMessage"
-            class="form-alert"
-            role="alert"
-          >
+        <form class="auth-form" @submit.prevent="handleSubmit">
+          <div v-if="errorMessage" class="form-alert" role="alert">
             {{ errorMessage }}
           </div>
 
           <div class="name-grid">
             <div class="form-field">
-              <label for="register-first-name">
-                First name
-              </label>
+              <label for="register-first-name"> First name </label>
 
               <input
                 id="register-first-name"
@@ -172,9 +155,7 @@ async function handleSubmit(): Promise<void> {
             </div>
 
             <div class="form-field">
-              <label for="register-last-name">
-                Last name
-              </label>
+              <label for="register-last-name"> Last name </label>
 
               <input
                 id="register-last-name"
@@ -190,9 +171,7 @@ async function handleSubmit(): Promise<void> {
           </div>
 
           <div class="form-field">
-            <label for="register-email">
-              Email address
-            </label>
+            <label for="register-email"> Email address </label>
 
             <input
               id="register-email"
@@ -209,9 +188,7 @@ async function handleSubmit(): Promise<void> {
           <div class="form-field">
             <label for="register-phone">
               Phone number
-              <span class="optional">
-                Optional
-              </span>
+              <span class="optional"> Optional </span>
             </label>
 
             <input
@@ -232,63 +209,41 @@ async function handleSubmit(): Promise<void> {
               <label
                 class="role-option"
                 :class="{
-                  selected:
-                    role === 'CUSTOMER',
+                  selected: role === 'CUSTOMER',
                 }"
               >
-                <input
-                  v-model="role"
-                  type="radio"
-                  value="CUSTOMER"
-                  :disabled="isSubmitting"
-                />
+                <input v-model="role" type="radio" value="CUSTOMER" :disabled="isSubmitting" />
 
                 <span>
                   <strong>Customer</strong>
-                  <small>
-                    Find and book services
-                  </small>
+                  <small> Find and book services </small>
                 </span>
               </label>
 
               <label
                 class="role-option"
                 :class="{
-                  selected:
-                    role === 'PROVIDER',
+                  selected: role === 'PROVIDER',
                 }"
               >
-                <input
-                  v-model="role"
-                  type="radio"
-                  value="PROVIDER"
-                  :disabled="isSubmitting"
-                />
+                <input v-model="role" type="radio" value="PROVIDER" :disabled="isSubmitting" />
 
                 <span>
                   <strong>Provider</strong>
-                  <small>
-                    Offer and manage services
-                  </small>
+                  <small> Offer and manage services </small>
                 </span>
               </label>
             </div>
           </fieldset>
 
           <div class="form-field">
-            <label for="register-password">
-              Password
-            </label>
+            <label for="register-password"> Password </label>
 
             <div class="password-wrapper">
               <input
                 id="register-password"
                 v-model="password"
-                :type="
-                  showPassword
-                    ? 'text'
-                    : 'password'
-                "
+                :type="showPassword ? 'text' : 'password'"
                 name="password"
                 autocomplete="new-password"
                 placeholder="At least 8 characters"
@@ -300,34 +255,21 @@ async function handleSubmit(): Promise<void> {
                 type="button"
                 class="password-toggle"
                 :disabled="isSubmitting"
-                @click="
-                  showPassword =
-                    !showPassword
-                "
+                @click="showPassword = !showPassword"
               >
-                {{
-                  showPassword
-                    ? "Hide"
-                    : "Show"
-                }}
+                {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
           </div>
 
           <div class="form-field">
-            <label for="register-confirm-password">
-              Confirm password
-            </label>
+            <label for="register-confirm-password"> Confirm password </label>
 
             <div class="password-wrapper">
               <input
                 id="register-confirm-password"
                 v-model="confirmPassword"
-                :type="
-                  showConfirmPassword
-                    ? 'text'
-                    : 'password'
-                "
+                :type="showConfirmPassword ? 'text' : 'password'"
                 name="confirm_password"
                 autocomplete="new-password"
                 placeholder="Re-enter your password"
@@ -339,43 +281,24 @@ async function handleSubmit(): Promise<void> {
                 type="button"
                 class="password-toggle"
                 :disabled="isSubmitting"
-                @click="
-                  showConfirmPassword =
-                    !showConfirmPassword
-                "
+                @click="showConfirmPassword = !showConfirmPassword"
               >
-                {{
-                  showConfirmPassword
-                    ? "Hide"
-                    : "Show"
-                }}
+                {{ showConfirmPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            :disabled="!canSubmit"
-          >
-            <span v-if="isSubmitting">
-              Creating account...
-            </span>
+          <button type="submit" class="submit-button" :disabled="!canSubmit">
+            <span v-if="isSubmitting"> Creating account... </span>
 
-            <span v-else>
-              Create account
-            </span>
+            <span v-else> Create account </span>
           </button>
         </form>
 
         <div class="auth-footer">
-          <span>
-            Already have an account?
-          </span>
+          <span> Already have an account? </span>
 
-          <RouterLink to="/login">
-            Sign in
-          </RouterLink>
+          <RouterLink to="/login"> Sign in </RouterLink>
         </div>
       </section>
     </main>
@@ -476,13 +399,7 @@ async function handleSubmit(): Promise<void> {
 
 .form-field input:focus {
   border-color: var(--color-primary);
-  box-shadow:
-    0 0 0 3px
-    color-mix(
-      in srgb,
-      var(--color-focus-ring) 35%,
-      transparent
-    );
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus-ring) 35%, transparent);
 }
 
 .form-field input:disabled {
@@ -629,4 +546,3 @@ async function handleSubmit(): Promise<void> {
   }
 }
 </style>
-

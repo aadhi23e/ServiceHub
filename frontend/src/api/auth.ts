@@ -1,6 +1,4 @@
-import {
-  apiRequest,
-} from "./client";
+import { apiRequest } from './client';
 
 import type {
   AuthUser,
@@ -9,61 +7,42 @@ import type {
   RefreshResponse,
   RegisterRequest,
   RegisterResponse,
-} from "../types/auth";
+} from '../types/auth';
 
-export function login(
-  payload: LoginRequest,
-): Promise<LoginResponse> {
-  return apiRequest<LoginResponse>(
-    "/auth/login",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-      skipAuth: true,
-    },
-  );
+export function login(payload: LoginRequest): Promise<LoginResponse> {
+  return apiRequest<LoginResponse>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    skipAuth: true,
+  });
 }
 
-export function register(
-  payload: RegisterRequest,
-): Promise<RegisterResponse> {
-  return apiRequest<RegisterResponse>(
-    "/auth/register",
-    {
-      method: "POST",
-      body: JSON.stringify(payload),
-      skipAuth: true,
-    },
-  );
+export function register(payload: RegisterRequest): Promise<RegisterResponse> {
+  return apiRequest<RegisterResponse>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    skipAuth: true,
+  });
 }
 
 export function refresh(): Promise<RefreshResponse> {
-  return apiRequest<RefreshResponse>(
-    "/auth/refresh",
-    {
-      method: "POST",
-      skipAuth: true,
-    },
-  );
+  return apiRequest<RefreshResponse>('/auth/refresh', {
+    method: 'POST',
+    skipAuth: true,
+  });
 }
 
 export function getCurrentUser(): Promise<AuthUser> {
-  return apiRequest<AuthUser>(
-    "/auth/me",
-    {
-      method: "GET",
-    },
-  );
+  return apiRequest<AuthUser>('/auth/me', {
+    method: 'GET',
+  });
 }
 
 export function logout(): Promise<void> {
-  console.log("API LOGOUT CALLED");
+  console.log('API LOGOUT CALLED');
 
-  return apiRequest<void>(
-    "/auth/logout",
-    {
-      method: "POST",
-      skipAuth: true,
-    },
-  );
+  return apiRequest<void>('/auth/logout', {
+    method: 'POST',
+    skipAuth: true,
+  });
 }

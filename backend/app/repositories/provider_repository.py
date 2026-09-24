@@ -12,9 +12,7 @@ class ProviderRepository:
         self,
         provider_id: int,
     ) -> ProviderProfile | None:
-        statement = select(ProviderProfile).where(
-            ProviderProfile.id == provider_id
-        )
+        statement = select(ProviderProfile).where(ProviderProfile.id == provider_id)
 
         return self.db.scalar(statement)
 
@@ -22,9 +20,7 @@ class ProviderRepository:
         self,
         user_id: int,
     ) -> ProviderProfile | None:
-        statement = select(ProviderProfile).where(
-            ProviderProfile.user_id == user_id
-        )
+        statement = select(ProviderProfile).where(ProviderProfile.user_id == user_id)
 
         return self.db.scalar(statement)
 
@@ -37,7 +33,7 @@ class ProviderRepository:
         self.db.flush()
 
         return provider
-    
+
     def update(
         self,
         provider: ProviderProfile,

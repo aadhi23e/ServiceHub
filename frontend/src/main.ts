@@ -1,13 +1,13 @@
-import { createApp } from "vue";
+import { createApp } from 'vue';
 
-import App from "./App.vue";
-import router from "./router";
-import { pinia } from "./app/pinia";
+import App from './App.vue';
+import router from './router';
+import { pinia } from './app/pinia';
 
-import { useThemeStore } from "./stores/theme";
-import { useAuthStore } from "./stores/auth";
+import { useThemeStore } from './stores/theme';
+import { useAuthStore } from './stores/auth';
 
-import "./styles/main.css";
+import './styles/main.css';
 
 async function bootstrap(): Promise<void> {
   const app = createApp(App);
@@ -27,7 +27,7 @@ async function bootstrap(): Promise<void> {
 
   await router.isReady();
 
-  app.mount("#app");
+  app.mount('#app');
 }
 
 bootstrap();

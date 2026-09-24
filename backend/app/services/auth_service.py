@@ -59,10 +59,8 @@ class AuthService:
             password_hash=hash_password(request.password),
             first_name=request.first_name.strip(),
             last_name=request.last_name.strip(),
-            phone=request.phone.strip()
-            if request.phone
-            else None,
-        #    role=UserRole.CUSTOMER.value, #TODO
+            phone=request.phone.strip() if request.phone else None,
+            #    role=UserRole.CUSTOMER.value, #TODO
             role=UserRole.PROVIDER.value,
             status=UserStatus.ACTIVE.value,
         )
@@ -120,9 +118,7 @@ class AuthService:
 
         settings = get_settings()
 
-        refresh_expires_in = (
-            settings.refresh_token_expire_days * 24 * 60 * 60
-        )
+        refresh_expires_in = settings.refresh_token_expire_days * 24 * 60 * 60
 
         self.auth_session_repository.create(
             token_hash=refresh_token_hash,
@@ -211,12 +207,7 @@ class AuthService:
 
         settings = get_settings()
 
-        refresh_expires_in = (
-            settings.refresh_token_expire_days
-            * 24
-            * 60
-            * 60
-        )
+        refresh_expires_in = settings.refresh_token_expire_days * 24 * 60 * 60
 
         self.auth_session_repository.create(
             token_hash=new_refresh_token_hash,
@@ -231,4 +222,3 @@ class AuthService:
         )
 
         return response, new_refresh_token
-    

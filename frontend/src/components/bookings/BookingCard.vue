@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import type { Booking } from "../../types/booking";
-import BookingStatusBadge from "./BookingStatusBadge.vue";
+import type { Booking } from '../../types/booking';
+import BookingStatusBadge from './BookingStatusBadge.vue';
 
 const props = defineProps<{
   booking: Booking;
@@ -21,32 +21,29 @@ const emit = defineEmits<{
 }>();
 
 const canCancelBooking = computed(() => {
-  return (
-    props.canCancel &&
-    ["PENDING", "CONFIRMED"].includes(props.booking.status)
-  );
+  return props.canCancel && ['PENDING', 'CONFIRMED'].includes(props.booking.status);
 });
 
 const canConfirmBooking = computed(() => {
-  return props.canManage && props.booking.status === "PENDING";
+  return props.canManage && props.booking.status === 'PENDING';
 });
 
 const canRejectBooking = computed(() => {
-  return props.canManage && props.booking.status === "PENDING";
+  return props.canManage && props.booking.status === 'PENDING';
 });
 
 const canStartBooking = computed(() => {
-  return props.canManage && props.booking.status === "CONFIRMED";
+  return props.canManage && props.booking.status === 'CONFIRMED';
 });
 
 const canCompleteBooking = computed(() => {
-  return props.canManage && props.booking.status === "IN_PROGRESS";
+  return props.canManage && props.booking.status === 'IN_PROGRESS';
 });
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(new Date(value));
 }
 </script>
@@ -55,13 +52,9 @@ function formatDate(value: string): string {
   <article class="booking-card">
     <div class="booking-card__header">
       <div>
-        <p class="booking-card__id">
-          Booking #{{ booking.id }}
-        </p>
+        <p class="booking-card__id">Booking #{{ booking.id }}</p>
 
-        <h3>
-          Service #{{ booking.service_id }}
-        </h3>
+        <h3>Service #{{ booking.service_id }}</h3>
       </div>
 
       <BookingStatusBadge :status="booking.status" />
@@ -84,20 +77,12 @@ function formatDate(value: string): string {
       </div>
     </div>
 
-    <p
-      v-if="booking.customer_notes"
-      class="booking-card__notes"
-    >
+    <p v-if="booking.customer_notes" class="booking-card__notes">
       {{ booking.customer_notes }}
     </p>
 
     <div class="booking-card__actions">
-      <button
-        type="button"
-        @click="emit('view', booking)"
-      >
-        View
-      </button>
+      <button type="button" @click="emit('view', booking)">View</button>
 
       <button
         v-if="canCancelBooking"

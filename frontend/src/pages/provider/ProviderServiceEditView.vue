@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onMounted, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { useServicesStore } from "../../stores/services";
-import { getServiceCategories } from "../../api/serviceCategories";
+import { useServicesStore } from '../../stores/services';
+import { getServiceCategories } from '../../api/serviceCategories';
 
-import type { ServiceCategory } from "../../types/serviceCategory";
+import type { ServiceCategory } from '../../types/serviceCategory';
 
 const route = useRoute();
 const router = useRouter();
@@ -17,12 +17,12 @@ const categoriesError = ref<string | null>(null);
 
 const loadingService = ref(true);
 const pageError = ref<string | null>(null);
-const successMessage = ref("");
+const successMessage = ref('');
 
 const form = reactive({
   category_id: 0,
-  name: "",
-  description: "",
+  name: '',
+  description: '',
   duration_minutes: 60,
   price: 0,
 });
@@ -38,7 +38,7 @@ function populateForm() {
 
   form.category_id = service.category_id;
   form.name = service.name;
-  form.description = service.description ?? "";
+  form.description = service.description ?? '';
   form.duration_minutes = service.duration_minutes;
   form.price = Number(service.price);
 }
@@ -51,9 +51,7 @@ async function loadCategories() {
     categories.value = await getServiceCategories();
   } catch (err) {
     categoriesError.value =
-      err instanceof Error
-        ? err.message
-        : "Failed to load service categories.";
+      err instanceof Error ? err.message : 'Failed to load service categories.';
   } finally {
     categoriesLoading.value = false;
   }
@@ -67,49 +65,42 @@ async function loadService() {
     await servicesStore.fetchService(serviceId);
 
     if (!servicesStore.selectedService) {
-      pageError.value = "Service could not be found.";
+      pageError.value = 'Service could not be found.';
       return;
     }
 
     populateForm();
   } catch (err) {
-    pageError.value =
-      err instanceof Error
-        ? err.message
-        : "Failed to load service.";
+    pageError.value = err instanceof Error ? err.message : 'Failed to load service.';
   } finally {
     loadingService.value = false;
   }
 }
 
 async function saveService() {
-  successMessage.value = "";
+  successMessage.value = '';
 
   try {
     await servicesStore.editService(serviceId, {
       category_id: form.category_id,
       name: form.name.trim(),
-      description:
-        form.description.trim() || null,
+      description: form.description.trim() || null,
       duration_minutes: form.duration_minutes,
       price: form.price,
     });
 
-    successMessage.value = "Service updated successfully.";
+    successMessage.value = 'Service updated successfully.';
   } catch {
     // The store exposes the API error.
   }
 }
 
 function goBack() {
-  router.push("/provider/services");
+  router.push('/provider/services');
 }
 
 onMounted(async () => {
-  await Promise.all([
-    loadCategories(),
-    loadService(),
-  ]);
+  await Promise.all([loadCategories(), loadService()]);
 });
 </script>
 
@@ -120,66 +111,38 @@ onMounted(async () => {
       <div>
         <p class="page-eyebrow">Provider</p>
 
-        <h1 class="page-title">
-          Edit service
-        </h1>
+        <h1 class="page-title">Edit service</h1>
 
-        <p class="page-description">
-          Update the details of your service.
-        </p>
+        <p class="page-description">Update the details of your service.</p>
       </div>
 
-      <button
-        type="button"
-        class="secondary-button"
-        @click="goBack"
-      >
-        Back to services
-      </button>
+      <button type="button" class="secondary-button" @click="goBack">Back to services</button>
     </div>
 
     <!-- Loading -->
-    <div
-      v-if="loadingService"
-      class="state-card"
-    >
+    <div v-if="loadingService" class="state-card">
       <div class="loading-spinner"></div>
 
       <p>Loading service...</p>
     </div>
 
     <!-- Page error -->
-    <div
-      v-else-if="pageError"
-      class="state-card state-card--error"
-    >
+    <div v-else-if="pageError" class="state-card state-card--error">
       <h2>Unable to load service</h2>
 
       <p>
         {{ pageError }}
       </p>
 
-      <button
-        type="button"
-        class="secondary-button"
-        @click="goBack"
-      >
-        Back to services
-      </button>
+      <button type="button" class="secondary-button" @click="goBack">Back to services</button>
     </div>
 
     <!-- Form -->
-    <form
-      v-else
-      class="form-card"
-      @submit.prevent="saveService"
-    >
+    <form v-else class="form-card" @submit.prevent="saveService">
       <div class="form-grid">
         <!-- Name -->
         <div class="form-field form-field--full">
-          <label for="name">
-            Service name
-          </label>
+          <label for="name"> Service name </label>
 
           <input
             id="name"
@@ -193,9 +156,7 @@ onMounted(async () => {
 
         <!-- Category -->
         <div class="form-field">
-          <label for="category">
-            Category
-          </label>
+          <label for="category"> Category </label>
 
           <select
             id="category"
@@ -203,39 +164,23 @@ onMounted(async () => {
             required
             :disabled="categoriesLoading"
           >
-            <option
-              disabled
-              :value="0"
-            >
-              {{
-                categoriesLoading
-                  ? "Loading categories..."
-                  : "Select a category"
-              }}
+            <option disabled :value="0">
+              {{ categoriesLoading ? 'Loading categories...' : 'Select a category' }}
             </option>
 
-            <option
-              v-for="category in categories"
-              :key="category.id"
-              :value="category.id"
-            >
+            <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
             </option>
           </select>
 
-          <p
-            v-if="categoriesError"
-            class="field-error"
-          >
+          <p v-if="categoriesError" class="field-error">
             {{ categoriesError }}
           </p>
         </div>
 
         <!-- Duration -->
         <div class="form-field">
-          <label for="duration">
-            Duration (minutes)
-          </label>
+          <label for="duration"> Duration (minutes) </label>
 
           <input
             id="duration"
@@ -249,9 +194,7 @@ onMounted(async () => {
 
         <!-- Price -->
         <div class="form-field">
-          <label for="price">
-            Price
-          </label>
+          <label for="price"> Price </label>
 
           <div class="price-input">
             <span>₹</span>
@@ -269,9 +212,7 @@ onMounted(async () => {
 
         <!-- Description -->
         <div class="form-field form-field--full">
-          <label for="description">
-            Description
-          </label>
+          <label for="description"> Description </label>
 
           <textarea
             id="description"
@@ -281,25 +222,17 @@ onMounted(async () => {
             placeholder="Describe what this service includes."
           />
 
-          <span class="character-count">
-            {{ form.description.length }}/5000
-          </span>
+          <span class="character-count"> {{ form.description.length }}/5000 </span>
         </div>
       </div>
 
       <!-- API Error -->
-      <div
-        v-if="servicesStore.error"
-        class="form-error"
-      >
+      <div v-if="servicesStore.error" class="form-error">
         {{ servicesStore.error }}
       </div>
 
       <!-- Success -->
-      <div
-        v-if="successMessage"
-        class="form-success"
-      >
+      <div v-if="successMessage" class="form-success">
         {{ successMessage }}
       </div>
 
@@ -317,16 +250,9 @@ onMounted(async () => {
         <button
           type="submit"
           class="primary-button"
-          :disabled="
-            servicesStore.saving ||
-            categoriesLoading
-          "
+          :disabled="servicesStore.saving || categoriesLoading"
         >
-          {{
-            servicesStore.saving
-              ? "Saving..."
-              : "Save changes"
-          }}
+          {{ servicesStore.saving ? 'Saving...' : 'Save changes' }}
         </button>
       </div>
     </form>
@@ -427,8 +353,7 @@ onMounted(async () => {
 .form-field select:focus,
 .form-field textarea:focus {
   border-color: var(--accent-primary);
-  box-shadow:
-    0 0 0 3px var(--accent-primary-soft);
+  box-shadow: 0 0 0 3px var(--accent-primary-soft);
 }
 
 .price-input {
@@ -442,8 +367,7 @@ onMounted(async () => {
 
 .price-input:focus-within {
   border-color: var(--accent-primary);
-  box-shadow:
-    0 0 0 3px var(--accent-primary-soft);
+  box-shadow: 0 0 0 3px var(--accent-primary-soft);
 }
 
 .price-input span {

@@ -27,6 +27,7 @@ def log_auth_event(
         **fields,
     )
 
+
 def configure_logging(log_level: str) -> None:
     logging.basicConfig(
         format="%(message)s",

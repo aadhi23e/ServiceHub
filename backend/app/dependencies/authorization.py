@@ -21,14 +21,9 @@ def require_roles(
     ) -> User:
 
         if current_user.status != "ACTIVE":
-            raise AuthorizationError(
-                "Your account is not active."
-            )
+            raise AuthorizationError("Your account is not active.")
 
-        allowed_values = {
-            role.value
-            for role in allowed_roles
-        }
+        allowed_values = {role.value for role in allowed_roles}
 
         if current_user.role not in allowed_values:
             raise AuthorizationError(

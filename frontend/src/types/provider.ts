@@ -1,4 +1,4 @@
-export type ProviderStatus = "ACTIVE" | "SUSPENDED";
+export type ProviderStatus = 'ACTIVE' | 'SUSPENDED';
 
 export interface Provider {
   id: number;

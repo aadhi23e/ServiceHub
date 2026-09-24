@@ -1,12 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { useAuthStore } from "../stores/auth";
-import {
-  useThemeStore,
-  type ThemeMode,
-} from "../stores/theme";
+import { useAuthStore } from '../stores/auth';
+import { useThemeStore, type ThemeMode } from '../stores/theme';
 
 const authStore = useAuthStore();
 const themeStore = useThemeStore();
@@ -16,29 +13,29 @@ const open = ref(false);
 
 const userName = computed(() => {
   if (!authStore.user) {
-    return "User";
+    return 'User';
   }
 
   return `${authStore.user.first_name} ${authStore.user.last_name}`;
 });
 
 const userInitial = computed(() => {
-  return authStore.user?.first_name?.charAt(0).toUpperCase() ?? "U";
+  return authStore.user?.first_name?.charAt(0).toUpperCase() ?? 'U';
 });
 
 const roleLabel = computed(() => {
   switch (authStore.role) {
-    case "CUSTOMER":
-      return "Customer";
+    case 'CUSTOMER':
+      return 'Customer';
 
-    case "PROVIDER":
-      return "Provider";
+    case 'PROVIDER':
+      return 'Provider';
 
-    case "ADMIN":
-      return "Administrator";
+    case 'ADMIN':
+      return 'Administrator';
 
     default:
-      return "User";
+      return 'User';
   }
 });
 
@@ -48,28 +45,24 @@ const themeOptions: Array<{
   icon: string;
 }> = [
   {
-    value: "system",
-    label: "System",
-    icon: "◐",
+    value: 'system',
+    label: 'System',
+    icon: '◐',
   },
   {
-    value: "light",
-    label: "Light",
-    icon: "☀",
+    value: 'light',
+    label: 'Light',
+    icon: '☀',
   },
   {
-    value: "dark",
-    label: "Dark",
-    icon: "☾",
+    value: 'dark',
+    label: 'Dark',
+    icon: '☾',
   },
 ];
 
 const activeThemeLabel = computed(() => {
-  return (
-    themeOptions.find(
-      (option) => option.value === themeStore.mode,
-    )?.label ?? "System"
-  );
+  return themeOptions.find((option) => option.value === themeStore.mode)?.label ?? 'System';
 });
 
 function toggleMenu(): void {
@@ -86,7 +79,7 @@ function selectTheme(mode: ThemeMode): void {
 
 function openSettings(): void {
   closeMenu();
-  router.push({ name: "settings" });
+  router.push({ name: 'settings' });
 }
 
 async function signout(): Promise<void> {
@@ -94,7 +87,7 @@ async function signout(): Promise<void> {
     await authStore.signout();
   } finally {
     open.value = false;
-    await router.replace({ name: "login" });
+    await router.replace({ name: 'login' });
   }
 }
 </script>
@@ -117,10 +110,7 @@ async function signout(): Promise<void> {
         <small>{{ roleLabel }}</small>
       </span>
 
-      <span
-        class="user-menu__chevron"
-        aria-hidden="true"
-      >
+      <span class="user-menu__chevron" aria-hidden="true">
         <svg
           viewBox="0 0 20 20"
           fill="none"
@@ -134,11 +124,7 @@ async function signout(): Promise<void> {
       </span>
     </button>
 
-    <div
-      v-if="open"
-      class="user-menu__dropdown"
-      role="menu"
-    >
+    <div v-if="open" class="user-menu__dropdown" role="menu">
       <!-- Account summary -->
       <div class="user-menu__summary">
         <div class="user-menu__summary-avatar">
@@ -181,12 +167,7 @@ async function signout(): Promise<void> {
           </span>
         </RouterLink>
 
-        <button
-          type="button"
-          class="user-menu__item"
-          role="menuitem"
-          @click="openSettings"
-        >
+        <button type="button" class="user-menu__item" role="menuitem" @click="openSettings">
           <span class="user-menu__item-icon">
             <svg
               viewBox="0 0 24 24"
@@ -196,9 +177,7 @@ async function signout(): Promise<void> {
               stroke-linecap="round"
               stroke-linejoin="round"
             >
-              <path
-                d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"
-              />
+              <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" />
               <path
                 d="m19.4 15 .1.1a2 2 0 0 1-2.8 2.8l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a2 2 0 0 1-4 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.8 1.8 0 0 0-.9-3H2.8a2 2 0 0 1 0-4H3a1.8 1.8 0 0 0 .9-3l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.8 1.8 0 0 0 3-.9V2.8a2 2 0 0 1 4 0V3a1.8 1.8 0 0 0 3 .9l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.8 1.8 0 0 0 .9 3h.2a2 2 0 0 1 0 4h-.2a1.8 1.8 0 0 0-.9 1.3Z"
               />
@@ -221,28 +200,20 @@ async function signout(): Promise<void> {
           <small>{{ activeThemeLabel }}</small>
         </div>
 
-        <div
-          class="user-menu__theme-options"
-          role="group"
-          aria-label="Theme selection"
-        >
+        <div class="user-menu__theme-options" role="group" aria-label="Theme selection">
           <button
             v-for="option in themeOptions"
             :key="option.value"
             type="button"
             class="user-menu__theme-option"
             :class="{
-              'user-menu__theme-option--active':
-                themeStore.mode === option.value,
+              'user-menu__theme-option--active': themeStore.mode === option.value,
             }"
             :aria-label="`Use ${option.label} theme`"
             :aria-pressed="themeStore.mode === option.value"
             @click="selectTheme(option.value)"
           >
-            <span
-              class="user-menu__theme-icon"
-              aria-hidden="true"
-            >
+            <span class="user-menu__theme-icon" aria-hidden="true">
               {{ option.icon }}
             </span>
 

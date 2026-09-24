@@ -1,19 +1,11 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
-import {
-  createProvider,
-  getMyProvider,
-  updateMyProvider,
-} from "../api/providers";
+import { createProvider, getMyProvider, updateMyProvider } from '../api/providers';
 
-import type {
-  Provider,
-  ProviderCreateRequest,
-  ProviderUpdateRequest,
-} from "../types/provider";
+import type { Provider, ProviderCreateRequest, ProviderUpdateRequest } from '../types/provider';
 
-export const useProviderStore = defineStore("provider", () => {
+export const useProviderStore = defineStore('provider', () => {
   const provider = ref<Provider | null>(null);
   const loading = ref(false);
   const creating = ref(false);
@@ -27,10 +19,7 @@ export const useProviderStore = defineStore("provider", () => {
     try {
       provider.value = await getMyProvider();
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to load provider profile.";
+      error.value = err instanceof Error ? err.message : 'Failed to load provider profile.';
 
       throw err;
     } finally {
@@ -38,9 +27,7 @@ export const useProviderStore = defineStore("provider", () => {
     }
   }
 
-  async function becomeProvider(
-    payload: ProviderCreateRequest,
-  ) {
+  async function becomeProvider(payload: ProviderCreateRequest) {
     creating.value = true;
     error.value = null;
 
@@ -49,10 +36,7 @@ export const useProviderStore = defineStore("provider", () => {
 
       return provider.value;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to create provider profile.";
+      error.value = err instanceof Error ? err.message : 'Failed to create provider profile.';
 
       throw err;
     } finally {
@@ -60,9 +44,7 @@ export const useProviderStore = defineStore("provider", () => {
     }
   }
 
-  async function updateProvider(
-    payload: ProviderUpdateRequest,
-  ) {
+  async function updateProvider(payload: ProviderUpdateRequest) {
     updating.value = true;
     error.value = null;
 
@@ -71,10 +53,7 @@ export const useProviderStore = defineStore("provider", () => {
 
       return provider.value;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to update provider profile.";
+      error.value = err instanceof Error ? err.message : 'Failed to update provider profile.';
 
       throw err;
     } finally {

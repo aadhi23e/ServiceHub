@@ -4,10 +4,7 @@ from app.dependencies.core import DBSession
 from app.repositories.service_category_repository import (
     ServiceCategoryRepository,
 )
-from app.schemas.service_category import (
-    ServiceCategoryResponse,
-    ServiceCategorRequest
-)
+from app.schemas.service_category import ServiceCategoryResponse, ServiceCategorRequest
 from app.models.service_category import ServiceCategory
 
 router = APIRouter(
@@ -26,6 +23,7 @@ def list_service_categories(
     repository = ServiceCategoryRepository(db)
 
     return repository.list_active()
+
 
 @router.post(
     "/create",

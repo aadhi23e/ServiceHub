@@ -12,7 +12,8 @@ if TYPE_CHECKING:
     from app.models.notification import Notification
     from app.models.provider import ProviderProfile
     from app.models.review import Review
-    
+
+
 class User(Base):
     __tablename__ = "users"
 

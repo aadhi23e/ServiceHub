@@ -12,9 +12,7 @@ class ServiceCategoryRepository:
         self,
         category_id: int,
     ) -> ServiceCategory | None:
-        statement = select(ServiceCategory).where(
-            ServiceCategory.id == category_id
-        )
+        statement = select(ServiceCategory).where(ServiceCategory.id == category_id)
 
         return self.db.scalar(statement)
 
@@ -27,13 +25,10 @@ class ServiceCategoryRepository:
 
         return list(self.db.scalars(statement).all())
 
-    def create(
-            self,
-            category: ServiceCategory
-        ) -> ServiceCategory:
+    def create(self, category: ServiceCategory) -> ServiceCategory:
 
         self.db.add(category)
         self.db.flush()
         self.db.commit()
-        self.db.refresh(category) #TODO
+        self.db.refresh(category)  # TODO
         return category

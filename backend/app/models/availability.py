@@ -17,7 +17,8 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.provider import ProviderProfile
-    
+
+
 class Availability(Base):
     __tablename__ = "availability"
 

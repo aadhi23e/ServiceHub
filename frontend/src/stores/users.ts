@@ -1,12 +1,6 @@
-import { defineStore } from "pinia";
-import {
-  getCurrentUser,
-  updateCurrentUser,
-} from "../api/users";
-import type {
-  User,
-  UserUpdateRequest,
-} from "../types/user";
+import { defineStore } from 'pinia';
+import { getCurrentUser, updateCurrentUser } from '../api/users';
+import type { User, UserUpdateRequest } from '../types/user';
 
 interface UserState {
   user: User | null;
@@ -16,7 +10,7 @@ interface UserState {
   initialized: boolean;
 }
 
-export const useUserStore = defineStore("user", {
+export const useUserStore = defineStore('user', {
   state: (): UserState => ({
     user: null,
     loading: false,
@@ -38,10 +32,7 @@ export const useUserStore = defineStore("user", {
 
         return user;
       } catch (error) {
-        this.error =
-          error instanceof Error
-            ? error.message
-            : "Unable to load your profile.";
+        this.error = error instanceof Error ? error.message : 'Unable to load your profile.';
 
         throw error;
       } finally {
@@ -49,9 +40,7 @@ export const useUserStore = defineStore("user", {
       }
     },
 
-    async updateProfile(
-      payload: UserUpdateRequest,
-    ): Promise<User> {
+    async updateProfile(payload: UserUpdateRequest): Promise<User> {
       this.saving = true;
       this.error = null;
 
@@ -62,10 +51,7 @@ export const useUserStore = defineStore("user", {
 
         return user;
       } catch (error) {
-        this.error =
-          error instanceof Error
-            ? error.message
-            : "Unable to update your profile.";
+        this.error = error instanceof Error ? error.message : 'Unable to update your profile.';
 
         throw error;
       } finally {

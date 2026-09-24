@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { BookingStatus } from "../../types/booking";
+import type { BookingStatus } from '../../types/booking';
 
 defineProps<{
   status: BookingStatus;
@@ -7,10 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <span
-    class="booking-status"
-    :class="`booking-status--${status.toLowerCase()}`"
-  >
-    {{ status.replace("_", " ") }}
+  <span class="booking-status" :class="`booking-status--${status.toLowerCase()}`">
+    {{ status.replace('_', ' ') }}
   </span>
 </template>

@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { onMounted } from "vue";
-import { RouterLink } from "vue-router";
+import { onMounted } from 'vue';
+import { RouterLink } from 'vue-router';
 
-import { useServicesStore } from "../../stores/services";
+import { useServicesStore } from '../../stores/services';
 
 const servicesStore = useServicesStore();
 
-async function toggleService(
-  serviceId: number,
-  isActive: boolean,
-) {
+async function toggleService(serviceId: number, isActive: boolean) {
   if (isActive) {
     await servicesStore.deactivate(serviceId);
   } else {
@@ -28,66 +25,32 @@ onMounted(() => {
       <div>
         <p class="page-eyebrow">Provider</p>
 
-        <h1 class="page-title">
-          My services
-        </h1>
+        <h1 class="page-title">My services</h1>
 
-        <p class="page-description">
-          Create and manage the services you offer to customers.
-        </p>
+        <p class="page-description">Create and manage the services you offer to customers.</p>
       </div>
 
-      <RouterLink
-        to="/provider/services/new"
-        class="primary-button"
-      >
-        Add service
-      </RouterLink>
+      <RouterLink to="/provider/services/new" class="primary-button"> Add service </RouterLink>
     </div>
 
-    <div
-      v-if="servicesStore.loading"
-      class="state-card"
-    >
-      Loading services...
-    </div>
+    <div v-if="servicesStore.loading" class="state-card">Loading services...</div>
 
-    <div
-      v-else-if="servicesStore.error"
-      class="state-card state-card--error"
-    >
+    <div v-else-if="servicesStore.error" class="state-card state-card--error">
       {{ servicesStore.error }}
     </div>
 
-    <div
-      v-else-if="servicesStore.services.length === 0"
-      class="empty-card"
-    >
+    <div v-else-if="servicesStore.services.length === 0" class="empty-card">
       <div class="empty-icon">+</div>
 
       <h2>No services yet</h2>
 
-      <p>
-        Create your first service so customers can book it.
-      </p>
+      <p>Create your first service so customers can book it.</p>
 
-      <RouterLink
-        to="/provider/services/new"
-        class="secondary-button"
-      >
-        Create service
-      </RouterLink>
+      <RouterLink to="/provider/services/new" class="secondary-button"> Create service </RouterLink>
     </div>
 
-    <div
-      v-else
-      class="services-grid"
-    >
-      <article
-        v-for="service in servicesStore.services"
-        :key="service.id"
-        class="service-card"
-      >
+    <div v-else class="services-grid">
+      <article v-for="service in servicesStore.services" :key="service.id" class="service-card">
         <div class="service-card__header">
           <div>
             <h2>{{ service.name }}</h2>
@@ -99,33 +62,23 @@ onMounted(() => {
                 'status-badge--inactive': !service.is_active,
               }"
             >
-              {{ service.is_active ? "Active" : "Inactive" }}
+              {{ service.is_active ? 'Active' : 'Inactive' }}
             </span>
           </div>
         </div>
 
         <p class="service-description">
-          {{
-            service.description ||
-            "No description provided."
-          }}
+          {{ service.description || 'No description provided.' }}
         </p>
 
         <div class="service-meta">
-          <span>
-            {{ service.duration_minutes }} min
-          </span>
+          <span> {{ service.duration_minutes }} min </span>
 
-          <span>
-            ₹{{ service.price }}
-          </span>
+          <span> ₹{{ service.price }} </span>
         </div>
 
         <div class="service-actions">
-          <RouterLink
-            :to="`/provider/services/${service.id}`"
-            class="secondary-button"
-          >
+          <RouterLink :to="`/provider/services/${service.id}`" class="secondary-button">
             Edit
           </RouterLink>
 
@@ -133,18 +86,9 @@ onMounted(() => {
             class="text-button"
             type="button"
             :disabled="servicesStore.saving"
-            @click="
-              toggleService(
-                service.id,
-                service.is_active,
-              )
-            "
+            @click="toggleService(service.id, service.is_active)"
           >
-            {{
-              service.is_active
-                ? "Deactivate"
-                : "Activate"
-            }}
+            {{ service.is_active ? 'Deactivate' : 'Activate' }}
           </button>
         </div>
       </article>
@@ -188,10 +132,7 @@ onMounted(() => {
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(280px, 1fr)
-  );
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
 }
 

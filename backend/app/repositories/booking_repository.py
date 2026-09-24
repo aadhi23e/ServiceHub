@@ -30,9 +30,7 @@ class BookingRepository:
         self,
         user_id: int,
     ) -> ProviderProfile | None:
-        statement = select(ProviderProfile).where(
-            ProviderProfile.user_id == user_id
-        )
+        statement = select(ProviderProfile).where(ProviderProfile.user_id == user_id)
 
         return self.db.scalar(statement)
 

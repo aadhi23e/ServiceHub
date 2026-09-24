@@ -1,5 +1,5 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
+import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 import {
   activateService,
@@ -8,15 +8,11 @@ import {
   getMyService,
   getMyServices,
   updateService,
-} from "../api/services";
+} from '../api/services';
 
-import type {
-  Service,
-  ServiceCreateRequest,
-  ServiceUpdateRequest,
-} from "../types/service";
+import type { Service, ServiceCreateRequest, ServiceUpdateRequest } from '../types/service';
 
-export const useServicesStore = defineStore("services", () => {
+export const useServicesStore = defineStore('services', () => {
   const services = ref<Service[]>([]);
   const selectedService = ref<Service | null>(null);
 
@@ -28,18 +24,12 @@ export const useServicesStore = defineStore("services", () => {
   const saving = ref(false);
   const error = ref<string | null>(null);
 
-  async function fetchServices(
-    requestedOffset = 0,
-    requestedLimit = 50,
-  ) {
+  async function fetchServices(requestedOffset = 0, requestedLimit = 50) {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await getMyServices(
-        requestedOffset,
-        requestedLimit,
-      );
+      const response = await getMyServices(requestedOffset, requestedLimit);
 
       services.value = response.items;
       total.value = response.total;
@@ -48,10 +38,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return response;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to load services.";
+      error.value = err instanceof Error ? err.message : 'Failed to load services.';
 
       throw err;
     } finally {
@@ -68,10 +55,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return selectedService.value;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to load service.";
+      error.value = err instanceof Error ? err.message : 'Failed to load service.';
 
       throw err;
     } finally {
@@ -79,9 +63,7 @@ export const useServicesStore = defineStore("services", () => {
     }
   }
 
-  async function addService(
-    payload: ServiceCreateRequest,
-  ) {
+  async function addService(payload: ServiceCreateRequest) {
     saving.value = true;
     error.value = null;
 
@@ -93,10 +75,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return service;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to create service.";
+      error.value = err instanceof Error ? err.message : 'Failed to create service.';
 
       throw err;
     } finally {
@@ -104,22 +83,14 @@ export const useServicesStore = defineStore("services", () => {
     }
   }
 
-  async function editService(
-    serviceId: number,
-    payload: ServiceUpdateRequest,
-  ) {
+  async function editService(serviceId: number, payload: ServiceUpdateRequest) {
     saving.value = true;
     error.value = null;
 
     try {
-      const service = await updateService(
-        serviceId,
-        payload,
-      );
+      const service = await updateService(serviceId, payload);
 
-      const index = services.value.findIndex(
-        (item) => item.id === service.id,
-      );
+      const index = services.value.findIndex((item) => item.id === service.id);
 
       if (index !== -1) {
         services.value[index] = service;
@@ -131,10 +102,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return service;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to update service.";
+      error.value = err instanceof Error ? err.message : 'Failed to update service.';
 
       throw err;
     } finally {
@@ -152,10 +120,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return service;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to activate service.";
+      error.value = err instanceof Error ? err.message : 'Failed to activate service.';
 
       throw err;
     } finally {
@@ -173,10 +138,7 @@ export const useServicesStore = defineStore("services", () => {
 
       return service;
     } catch (err) {
-      error.value =
-        err instanceof Error
-          ? err.message
-          : "Failed to deactivate service.";
+      error.value = err instanceof Error ? err.message : 'Failed to deactivate service.';
 
       throw err;
     } finally {
@@ -185,9 +147,7 @@ export const useServicesStore = defineStore("services", () => {
   }
 
   function replaceService(service: Service) {
-    const index = services.value.findIndex(
-      (item) => item.id === service.id,
-    );
+    const index = services.value.findIndex((item) => item.id === service.id);
 
     if (index !== -1) {
       services.value[index] = service;

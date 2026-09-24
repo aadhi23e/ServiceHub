@@ -56,10 +56,8 @@ def test_refresh_rotates_refresh_token():
             return_value=new_refresh_token,
         ),
     ):
-        token_response, returned_refresh_token = (
-            auth_service.refresh(
-                old_refresh_token,
-            )
+        token_response, returned_refresh_token = auth_service.refresh(
+            old_refresh_token,
         )
 
     assert isinstance(

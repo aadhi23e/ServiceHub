@@ -1,5 +1,5 @@
-@import "./tokens.css";
-@import "./themes.css";
+@import './tokens.css';
+@import './themes.css';
 
 *,
 *::before,
@@ -17,7 +17,7 @@ html {
     color var(--transition-normal);
 }
 
-html[data-theme="dark"] {
+html[data-theme='dark'] {
   color-scheme: dark;
 }
 

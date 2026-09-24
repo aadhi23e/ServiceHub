@@ -1,6 +1,6 @@
-export type UserRole = "CUSTOMER" | "PROVIDER" | "ADMIN";
+export type UserRole = 'CUSTOMER' | 'PROVIDER' | 'ADMIN';
 
-export type UserStatus = "ACTIVE" | "SUSPENDED";
+export type UserStatus = 'ACTIVE' | 'SUSPENDED';
 
 export interface User {
   id: number;

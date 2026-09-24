@@ -30,11 +30,7 @@ def create_rate_limit_dependency(
 
         policy = policy_factory()
 
-        identifier = (
-            request.client.host
-            if request.client
-            else "unknown"
-        )
+        identifier = request.client.host if request.client else "unknown"
 
         key = build_rate_limit_key(
             identifier=identifier,

@@ -33,9 +33,7 @@ def test_rate_limit_dependency_uses_client_ip():
 
     redis_client = Mock()
 
-    with patch(
-        "app.core.rate_limit_dependencies.RateLimiter"
-    ) as limiter_class:
+    with patch("app.core.rate_limit_dependencies.RateLimiter") as limiter_class:
         limiter = limiter_class.return_value
 
         dependency = create_rate_limit_dependency(
@@ -55,6 +53,7 @@ def test_rate_limit_dependency_uses_client_ip():
             window_seconds=60,
             policy="test",
         )
+
 
 def test_rate_limit_dependency_uses_unknown_when_client_missing():
     policy = RateLimitPolicy(
@@ -77,9 +76,7 @@ def test_rate_limit_dependency_uses_unknown_when_client_missing():
         }
     )
 
-    with patch(
-        "app.core.rate_limit_dependencies.RateLimiter"
-    ) as limiter_class:
+    with patch("app.core.rate_limit_dependencies.RateLimiter") as limiter_class:
         limiter = limiter_class.return_value
 
         dependency = create_rate_limit_dependency(
@@ -98,6 +95,7 @@ def test_rate_limit_dependency_uses_unknown_when_client_missing():
             policy="test",
         )
 
+
 def test_rate_limit_dependency_does_nothing_when_disabled():
     policy = RateLimitPolicy(
         name="test",
@@ -107,14 +105,10 @@ def test_rate_limit_dependency_does_nothing_when_disabled():
 
     redis_client = Mock()
 
-    with patch(
-        "app.core.rate_limit_dependencies.get_settings"
-    ) as get_settings:
+    with patch("app.core.rate_limit_dependencies.get_settings") as get_settings:
         get_settings.return_value.rate_limit_enabled = False
 
-        with patch(
-            "app.core.rate_limit_dependencies.RateLimiter"
-        ) as limiter_class:
+        with patch("app.core.rate_limit_dependencies.RateLimiter") as limiter_class:
             dependency = create_rate_limit_dependency(
                 lambda: policy,
             )
@@ -125,7 +119,3 @@ def test_rate_limit_dependency_does_nothing_when_disabled():
             )
 
             limiter_class.assert_not_called()
-
-
-
-            

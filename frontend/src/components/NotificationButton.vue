@@ -11,10 +11,7 @@ defineProps<{
     aria-label="Notifications"
     title="Notifications"
   >
-    <span
-      class="notification-button__icon"
-      aria-hidden="true"
-    >
+    <span class="notification-button__icon" aria-hidden="true">
       <svg
         viewBox="0 0 24 24"
         fill="none"
@@ -23,9 +20,7 @@ defineProps<{
         stroke-linecap="round"
         stroke-linejoin="round"
       >
-        <path
-          d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
-        />
+        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
         <path d="M10 21h4" />
       </svg>
     </span>
@@ -35,7 +30,7 @@ defineProps<{
       class="notification-button__badge"
       aria-hidden="true"
     >
-      {{ unreadCount > 9 ? "9+" : unreadCount }}
+      {{ unreadCount > 9 ? '9+' : unreadCount }}
     </span>
   </button>
 </template>

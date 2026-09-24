@@ -18,6 +18,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.user import User
 
+
 class Notification(Base):
     __tablename__ = "notifications"
 
@@ -35,9 +36,7 @@ class Notification(Base):
             "ix_notifications_user_unread",
             "user_id",
             "created_at",
-            postgresql_where=text(
-                "status = 'UNREAD'"
-            ),
+            postgresql_where=text("status = 'UNREAD'"),
         ),
     )
 

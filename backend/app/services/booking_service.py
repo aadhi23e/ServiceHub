@@ -76,6 +76,7 @@ class BookingService:
                 message="The booking could not be created because it conflicts with existing data.",
                 code="BOOKING_CREATE_CONFLICT",
             ) from exc
+
     def get_customer_bookings(
         self,
         *,
@@ -90,9 +91,7 @@ class BookingService:
         *,
         provider_user_id: int,
     ) -> list[Booking]:
-        provider = self.repository.get_provider_profile_by_user_id(
-            provider_user_id
-        )
+        provider = self.repository.get_provider_profile_by_user_id(provider_user_id)
 
         if provider is None:
             raise ResourceNotFoundError(
@@ -118,16 +117,11 @@ class BookingService:
         if user.role == UserRole.ADMIN.value:
             return booking
 
-        if (
-            user.role == UserRole.CUSTOMER.value
-            and booking.customer_id == user.id
-        ):
+        if user.role == UserRole.CUSTOMER.value and booking.customer_id == user.id:
             return booking
 
         if user.role == UserRole.PROVIDER.value:
-            provider = self.repository.get_provider_profile_by_user_id(
-                user.id
-            )
+            provider = self.repository.get_provider_profile_by_user_id(user.id)
 
             if provider is not None and booking.provider_id == provider.id:
                 return booking
@@ -233,9 +227,7 @@ class BookingService:
                 )
 
         elif user.role == UserRole.PROVIDER.value:
-            provider = self.repository.get_provider_profile_by_user_id(
-                user.id
-            )
+            provider = self.repository.get_provider_profile_by_user_id(user.id)
 
             if provider is None or booking.provider_id != provider.id:
                 raise AuthorizationError(
@@ -285,9 +277,7 @@ class BookingService:
                 code="BOOKING_MODIFICATION_FORBIDDEN",
             )
 
-        provider = self.repository.get_provider_profile_by_user_id(
-            user.id
-        )
+        provider = self.repository.get_provider_profile_by_user_id(user.id)
 
         if provider is None or booking.provider_id != provider.id:
             raise AuthorizationError(
@@ -305,9 +295,7 @@ class BookingService:
         current_status = BookingStatus(booking.status)
 
         if current_status not in allowed:
-            allowed_values = ", ".join(
-                status.value for status in allowed
-            )
+            allowed_values = ", ".join(status.value for status in allowed)
 
             raise ConflictError(
                 message=(

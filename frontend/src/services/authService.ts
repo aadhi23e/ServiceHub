@@ -1,28 +1,18 @@
-import * as authApi from "../api/auth";
-import { useAuthStore } from "../stores/auth";
-import { pinia } from "../app/pinia";
+import * as authApi from '../api/auth';
+import { useAuthStore } from '../stores/auth';
+import { pinia } from '../app/pinia';
 
-import type {
-  LoginRequest,
-  RegisterRequest,
-} from "../types/auth";
+import type { LoginRequest, RegisterRequest } from '../types/auth';
 
 const authStore = useAuthStore(pinia);
 
-export async function signIn(
-  payload: LoginRequest,
-): Promise<void> {
+export async function signIn(payload: LoginRequest): Promise<void> {
   const response = await authApi.login(payload);
 
-  authStore.setSession(
-    response.user,
-    response.access_token,
-  );
+  authStore.setSession(response.user, response.access_token);
 }
 
-export async function signUp(
-  payload: RegisterRequest,
-): Promise<void> {
+export async function signUp(payload: RegisterRequest): Promise<void> {
   await authApi.register(payload);
 }
 
@@ -34,9 +24,7 @@ export async function loadCurrentUser(): Promise<void> {
   } catch {
     authStore.clearSession();
 
-    throw new Error(
-      "Unable to load the current user.",
-    );
+    throw new Error('Unable to load the current user.');
   }
 }
 

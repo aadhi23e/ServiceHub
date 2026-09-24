@@ -66,6 +66,7 @@ class ValidationError(ServiceHubError):
 
 class RateLimitError(ServiceHubError):
     """Raised when a client exceeds a rate limit."""
+
     status_code = 429
     code = "RATE_LIMITED"
     message = "Too many requests. Please try again later."
@@ -90,12 +91,14 @@ class RateLimitError(ServiceHubError):
         self.remaining = max(remaining, 0)
         self.policy = policy
 
+
 class DependencyUnavailableError(ServiceHubError):
     """Raised when a required dependency is unavailable."""
 
     status_code = 503
     code = "DEPENDENCY_UNAVAILABLE"
     message = "A required service is temporarily unavailable."
+
 
 # TODO: remove the below ones they are for references only
 """

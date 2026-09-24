@@ -18,7 +18,7 @@ from app.schemas.auth import (
     RegisterRequest,
     RegisterResponse,
     TokenResponse,
-    UserResponse
+    UserResponse,
 )
 from app.core.exceptions import AuthenticationError
 from app.core.config import get_settings
@@ -31,6 +31,7 @@ router = APIRouter(
 )
 
 logger = structlog.get_logger("servicehub.auth")
+
 
 @router.post(
     "/login",
@@ -70,6 +71,7 @@ def login(
 
     return login_response
 
+
 @router.post(
     "/register",
     response_model=RegisterResponse,
@@ -89,6 +91,7 @@ def register(
     )
 
     return RegisterResponse(user=user)
+
 
 @router.post(
     "/logout",
@@ -167,6 +170,7 @@ def refresh(
     )
 
     return token_response
+
 
 @router.get(
     "/me",

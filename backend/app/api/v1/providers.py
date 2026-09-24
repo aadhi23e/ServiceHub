@@ -30,7 +30,6 @@ from app.schemas.availability import (
 )
 from app.services.availability_service import AvailabilityService
 
-
 router = APIRouter(
     prefix="/providers",
     tags=["providers"],
@@ -51,7 +50,7 @@ def create_my_provider_profile(
     ],
     db: DBSession,
 ) -> ProviderProfile:
-    
+
     provider_service = ProviderService(db)
     provider = provider_service.create_provider(
         request,
@@ -63,7 +62,8 @@ def create_my_provider_profile(
         user_id=provider.id,
         success=True,
     )
-    return provider 
+    return provider
+
 
 @router.get(
     "/me",
@@ -96,6 +96,7 @@ def update_my_provider_profile(
         current_provider,
         request,
     )
+
 
 @router.get(
     "/me/services",
@@ -251,9 +252,7 @@ def list_my_availability(
 ) -> list[AvailabilityResponse]:
     availability_service = AvailabilityService(db)
 
-    return availability_service.list(
-        current_provider
-    )
+    return availability_service.list(current_provider)
 
 
 @router.post(

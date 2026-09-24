@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed } from 'vue';
 
-import {
-  useThemeStore,
-  type ThemeMode,
-} from "../../stores/theme";
+import { useThemeStore, type ThemeMode } from '../../stores/theme';
 
 const themeStore = useThemeStore();
 
@@ -15,31 +12,27 @@ const themeOptions: Array<{
   icon: string;
 }> = [
   {
-    value: "system",
-    label: "System",
-    description: "Follow your operating system preference.",
-    icon: "◐",
+    value: 'system',
+    label: 'System',
+    description: 'Follow your operating system preference.',
+    icon: '◐',
   },
   {
-    value: "light",
-    label: "Light",
-    description: "Use the light ServiceHub interface.",
-    icon: "☀",
+    value: 'light',
+    label: 'Light',
+    description: 'Use the light ServiceHub interface.',
+    icon: '☀',
   },
   {
-    value: "dark",
-    label: "Dark",
-    description: "Use the dark ServiceHub interface.",
-    icon: "☾",
+    value: 'dark',
+    label: 'Dark',
+    description: 'Use the dark ServiceHub interface.',
+    icon: '☾',
   },
 ];
 
 const activeThemeLabel = computed(() => {
-  return (
-    themeOptions.find(
-      (option) => option.value === themeStore.mode,
-    )?.label ?? "System"
-  );
+  return themeOptions.find((option) => option.value === themeStore.mode)?.label ?? 'System';
 });
 
 function selectTheme(mode: ThemeMode): void {
@@ -51,32 +44,20 @@ function selectTheme(mode: ThemeMode): void {
   <section class="settings-page">
     <header class="settings-page__header">
       <div>
-        <span class="settings-page__eyebrow">
-          Preferences
-        </span>
+        <span class="settings-page__eyebrow"> Preferences </span>
 
         <h2>Settings</h2>
 
-        <p>
-          Manage your ServiceHub preferences and application experience.
-        </p>
+        <p>Manage your ServiceHub preferences and application experience.</p>
       </div>
     </header>
 
     <div class="settings-layout">
       <!-- Settings navigation -->
       <aside class="settings-sidebar">
-        <nav
-          class="settings-nav"
-          aria-label="Settings sections"
-        >
-          <a
-            href="#appearance"
-            class="settings-nav__item settings-nav__item--active"
-          >
-            <span class="settings-nav__icon">
-              ☼
-            </span>
+        <nav class="settings-nav" aria-label="Settings sections">
+          <a href="#appearance" class="settings-nav__item settings-nav__item--active">
+            <span class="settings-nav__icon"> ☼ </span>
 
             <span>
               <strong>Appearance</strong>
@@ -84,13 +65,8 @@ function selectTheme(mode: ThemeMode): void {
             </span>
           </a>
 
-          <a
-            href="#account"
-            class="settings-nav__item"
-          >
-            <span class="settings-nav__icon">
-              ◎
-            </span>
+          <a href="#account" class="settings-nav__item">
+            <span class="settings-nav__icon"> ◎ </span>
 
             <span>
               <strong>Account</strong>
@@ -98,13 +74,8 @@ function selectTheme(mode: ThemeMode): void {
             </span>
           </a>
 
-          <a
-            href="#notifications"
-            class="settings-nav__item"
-          >
-            <span class="settings-nav__icon">
-              ◉
-            </span>
+          <a href="#notifications" class="settings-nav__item">
+            <span class="settings-nav__icon"> ◉ </span>
 
             <span>
               <strong>Notifications</strong>
@@ -117,20 +88,13 @@ function selectTheme(mode: ThemeMode): void {
       <!-- Settings content -->
       <div class="settings-content">
         <!-- Appearance -->
-        <section
-          id="appearance"
-          class="settings-card"
-        >
+        <section id="appearance" class="settings-card">
           <div class="settings-card__header">
-            <div class="settings-card__icon">
-              ☼
-            </div>
+            <div class="settings-card__icon">☼</div>
 
             <div>
               <h3>Appearance</h3>
-              <p>
-                Customize how ServiceHub looks on your device.
-              </p>
+              <p>Customize how ServiceHub looks on your device.</p>
             </div>
           </div>
 
@@ -139,25 +103,18 @@ function selectTheme(mode: ThemeMode): void {
               <div class="settings-row__content">
                 <strong>Theme</strong>
 
-                <span>
-                  Current theme: {{ activeThemeLabel }}
-                </span>
+                <span> Current theme: {{ activeThemeLabel }} </span>
               </div>
             </div>
 
-            <div
-              class="theme-grid"
-              role="radiogroup"
-              aria-label="Theme selection"
-            >
+            <div class="theme-grid" role="radiogroup" aria-label="Theme selection">
               <button
                 v-for="option in themeOptions"
                 :key="option.value"
                 type="button"
                 class="theme-card"
                 :class="{
-                  'theme-card--active':
-                    themeStore.mode === option.value,
+                  'theme-card--active': themeStore.mode === option.value,
                 }"
                 :aria-checked="themeStore.mode === option.value"
                 role="radio"
@@ -175,10 +132,7 @@ function selectTheme(mode: ThemeMode): void {
                   </small>
                 </span>
 
-                <span
-                  class="theme-card__check"
-                  aria-hidden="true"
-                >
+                <span class="theme-card__check" aria-hidden="true">
                   <svg
                     v-if="themeStore.mode === option.value"
                     viewBox="0 0 20 20"
@@ -197,20 +151,13 @@ function selectTheme(mode: ThemeMode): void {
         </section>
 
         <!-- Account -->
-        <section
-          id="account"
-          class="settings-card"
-        >
+        <section id="account" class="settings-card">
           <div class="settings-card__header">
-            <div class="settings-card__icon">
-              ◎
-            </div>
+            <div class="settings-card__icon">◎</div>
 
             <div>
               <h3>Account</h3>
-              <p>
-                Manage your account preferences.
-              </p>
+              <p>Manage your account preferences.</p>
             </div>
           </div>
 
@@ -218,33 +165,22 @@ function selectTheme(mode: ThemeMode): void {
             <div class="settings-row settings-row--disabled">
               <div class="settings-row__content">
                 <strong>Account preferences</strong>
-                <span>
-                  More account settings will be available here.
-                </span>
+                <span> More account settings will be available here. </span>
               </div>
 
-              <span class="settings-row__status">
-                Coming soon
-              </span>
+              <span class="settings-row__status"> Coming soon </span>
             </div>
           </div>
         </section>
 
         <!-- Notifications -->
-        <section
-          id="notifications"
-          class="settings-card"
-        >
+        <section id="notifications" class="settings-card">
           <div class="settings-card__header">
-            <div class="settings-card__icon">
-              ◉
-            </div>
+            <div class="settings-card__icon">◉</div>
 
             <div>
               <h3>Notifications</h3>
-              <p>
-                Control how ServiceHub keeps you informed.
-              </p>
+              <p>Control how ServiceHub keeps you informed.</p>
             </div>
           </div>
 
@@ -252,14 +188,10 @@ function selectTheme(mode: ThemeMode): void {
             <div class="settings-row settings-row--disabled">
               <div class="settings-row__content">
                 <strong>Notification preferences</strong>
-                <span>
-                  Notification controls will be available here.
-                </span>
+                <span> Notification controls will be available here. </span>
               </div>
 
-              <span class="settings-row__status">
-                Coming soon
-              </span>
+              <span class="settings-row__status"> Coming soon </span>
             </div>
           </div>
         </section>

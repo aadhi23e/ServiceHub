@@ -1,21 +1,16 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import { RouterView } from 'vue-router';
 </script>
 
 <template>
   <div class="auth-layout">
     <aside class="auth-layout__brand">
       <div class="auth-layout__brand-content">
-        <div class="auth-layout__logo">
-          SH
-        </div>
+        <div class="auth-layout__logo">SH</div>
 
         <h1>ServiceHub</h1>
 
-        <p>
-          Find trusted services and manage your bookings
-          in one place.
-        </p>
+        <p>Find trusted services and manage your bookings in one place.</p>
       </div>
     </aside>
 
@@ -46,12 +41,7 @@ import { RouterView } from "vue-router";
   display: flex;
   align-items: center;
   padding: var(--space-12);
-  background:
-    linear-gradient(
-      135deg,
-      var(--color-primary-800),
-      var(--color-primary-600)
-    );
+  background: linear-gradient(135deg, var(--color-primary-800), var(--color-primary-600));
   color: var(--color-text-inverse);
 }
 
@@ -110,11 +100,7 @@ import { RouterView } from "vue-router";
   align-items: center;
   justify-content: center;
 
-  padding: clamp(
-    var(--space-6),
-    4vw,
-    var(--space-12)
-  );
+  padding: clamp(var(--space-6), 4vw, var(--space-12));
 
   overflow-y: auto;
 

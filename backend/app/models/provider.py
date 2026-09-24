@@ -21,7 +21,8 @@ if TYPE_CHECKING:
     from app.models.review import Review
     from app.models.service import Service
     from app.models.user import User
-    
+
+
 class ProviderProfile(Base):
     __tablename__ = "provider_profiles"
 

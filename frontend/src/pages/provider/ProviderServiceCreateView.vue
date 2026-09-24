@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { onMounted, reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { getServiceCategories } from "../../api/serviceCategories";
-import { useServicesStore } from "../../stores/services";
+import { getServiceCategories } from '../../api/serviceCategories';
+import { useServicesStore } from '../../stores/services';
 
-import type { ServiceCategory } from "../../types/serviceCategory";
+import type { ServiceCategory } from '../../types/serviceCategory';
 
 const router = useRouter();
 const servicesStore = useServicesStore();
@@ -16,8 +16,8 @@ const categoriesError = ref<string | null>(null);
 
 const form = reactive({
   category_id: 0,
-  name: "",
-  description: "",
+  name: '',
+  description: '',
   duration_minutes: 60,
   price: 0,
 });
@@ -30,9 +30,7 @@ async function loadCategories() {
     categories.value = await getServiceCategories();
   } catch (err) {
     categoriesError.value =
-      err instanceof Error
-        ? err.message
-        : "Failed to load service categories.";
+      err instanceof Error ? err.message : 'Failed to load service categories.';
   } finally {
     categoriesLoading.value = false;
   }
@@ -42,13 +40,12 @@ async function submit() {
   await servicesStore.addService({
     category_id: form.category_id,
     name: form.name.trim(),
-    description:
-      form.description.trim() || null,
+    description: form.description.trim() || null,
     duration_minutes: form.duration_minutes,
     price: form.price,
   });
 
-  await router.push("/provider/services");
+  await router.push('/provider/services');
 }
 
 onMounted(loadCategories);
@@ -60,25 +57,16 @@ onMounted(loadCategories);
       <div>
         <p class="page-eyebrow">Provider</p>
 
-        <h1 class="page-title">
-          Create service
-        </h1>
+        <h1 class="page-title">Create service</h1>
 
-        <p class="page-description">
-          Add a service customers can book.
-        </p>
+        <p class="page-description">Add a service customers can book.</p>
       </div>
     </div>
 
-    <form
-      class="form-card"
-      @submit.prevent="submit"
-    >
+    <form class="form-card" @submit.prevent="submit">
       <div class="form-grid">
         <div class="form-field form-field--full">
-          <label for="name">
-            Service name
-          </label>
+          <label for="name"> Service name </label>
 
           <input
             id="name"
@@ -91,9 +79,7 @@ onMounted(loadCategories);
         </div>
 
         <div class="form-field">
-          <label for="category">
-            Category
-          </label>
+          <label for="category"> Category </label>
 
           <select
             id="category"
@@ -101,31 +87,18 @@ onMounted(loadCategories);
             required
             :disabled="categoriesLoading"
           >
-            <option
-              disabled
-              :value="0"
-            >
-              {{
-                categoriesLoading
-                  ? "Loading categories..."
-                  : "Select a category"
-              }}
+            <option disabled :value="0">
+              {{ categoriesLoading ? 'Loading categories...' : 'Select a category' }}
             </option>
 
-            <option
-              v-for="category in categories"
-              :key="category.id"
-              :value="category.id"
-            >
+            <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
             </option>
           </select>
         </div>
 
         <div class="form-field">
-          <label for="duration">
-            Duration (minutes)
-          </label>
+          <label for="duration"> Duration (minutes) </label>
 
           <input
             id="duration"
@@ -138,9 +111,7 @@ onMounted(loadCategories);
         </div>
 
         <div class="form-field">
-          <label for="price">
-            Price
-          </label>
+          <label for="price"> Price </label>
 
           <div class="price-input">
             <span>₹</span>
@@ -157,9 +128,7 @@ onMounted(loadCategories);
         </div>
 
         <div class="form-field form-field--full">
-          <label for="description">
-            Description
-          </label>
+          <label for="description"> Description </label>
 
           <textarea
             id="description"
@@ -171,42 +140,23 @@ onMounted(loadCategories);
         </div>
       </div>
 
-      <div
-        v-if="categoriesError"
-        class="form-error"
-      >
+      <div v-if="categoriesError" class="form-error">
         {{ categoriesError }}
       </div>
 
-      <div
-        v-if="servicesStore.error"
-        class="form-error"
-      >
+      <div v-if="servicesStore.error" class="form-error">
         {{ servicesStore.error }}
       </div>
 
       <div class="form-actions">
-        <button
-          type="button"
-          class="secondary-button"
-          @click="router.back()"
-        >
-          Cancel
-        </button>
+        <button type="button" class="secondary-button" @click="router.back()">Cancel</button>
 
         <button
           type="submit"
           class="primary-button"
-          :disabled="
-            servicesStore.saving ||
-            categoriesLoading
-          "
+          :disabled="servicesStore.saving || categoriesLoading"
         >
-          {{
-            servicesStore.saving
-              ? "Creating..."
-              : "Create service"
-          }}
+          {{ servicesStore.saving ? 'Creating...' : 'Create service' }}
         </button>
       </div>
     </form>

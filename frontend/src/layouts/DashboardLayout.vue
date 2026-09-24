@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { RouterView, useRoute } from "vue-router";
+import { computed, ref } from 'vue';
+import { RouterView, useRoute } from 'vue-router';
 
-import AppSidebar from "../components/AppSidebar.vue";
-import NotificationButton from "../components/NotificationButton.vue";
-import UserMenu from "../components/UserMenu.vue";
+import AppSidebar from '../components/AppSidebar.vue';
+import NotificationButton from '../components/NotificationButton.vue';
+import UserMenu from '../components/UserMenu.vue';
 
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -14,28 +14,28 @@ const route = useRoute();
 const mobileSidebarOpen = ref(false);
 
 const pageTitle = computed(() => {
-  if (typeof route.meta.title === "string") {
+  if (typeof route.meta.title === 'string') {
     return route.meta.title;
   }
 
   switch (authStore.role) {
-    case "CUSTOMER":
-      return "Customer Dashboard";
-    case "PROVIDER":
-      return "Provider Dashboard";
-    case "ADMIN":
-      return "Admin Dashboard";
+    case 'CUSTOMER':
+      return 'Customer Dashboard';
+    case 'PROVIDER':
+      return 'Provider Dashboard';
+    case 'ADMIN':
+      return 'Admin Dashboard';
     default:
-      return "Dashboard";
+      return 'Dashboard';
   }
 });
 
 const pageDescription = computed(() => {
-  if (typeof route.meta.description === "string") {
+  if (typeof route.meta.description === 'string') {
     return route.meta.description;
   }
 
-  return "Manage your ServiceHub activity.";
+  return 'Manage your ServiceHub activity.';
 });
 
 function toggleMobileSidebar(): void {
@@ -54,16 +54,19 @@ function closeMobileSidebar(): void {
     <div class="app-shell__main">
       <header class="app-topbar">
         <div class="app-topbar__left">
-          <button type="button" class="mobile-menu-button" aria-label="Open navigation" @click="toggleMobileSidebar">
+          <button
+            type="button"
+            class="mobile-menu-button"
+            aria-label="Open navigation"
+            @click="toggleMobileSidebar"
+          >
             <span />
             <span />
             <span />
           </button>
 
           <div class="page-heading">
-            <span class="page-heading__eyebrow">
-              ServiceHub
-            </span>
+            <span class="page-heading__eyebrow"> ServiceHub </span>
 
             <h1>{{ pageTitle }}</h1>
 
@@ -110,9 +113,7 @@ function closeMobileSidebar(): void {
   justify-content: space-between;
   gap: var(--space-6);
   padding: var(--space-3) var(--space-8);
-  background: color-mix(in srgb,
-      var(--color-surface) 94%,
-      transparent);
+  background: color-mix(in srgb, var(--color-surface) 94%, transparent);
   border-bottom: 1px solid var(--color-border);
   backdrop-filter: blur(12px);
 }

@@ -30,12 +30,14 @@ class RateLimitResult:
     retry_after: int
     policy: str
 
+
 def build_rate_limit_key(
     *,
     identifier: str,
     policy: str,
 ) -> str:
     return f"servicehub:rate_limit:ip:{identifier}:{policy}"
+
 
 class RateLimiter:
     def __init__(self, redis_client: Redis) -> None:

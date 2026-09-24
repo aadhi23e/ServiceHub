@@ -14,7 +14,6 @@ from argon2.exceptions import (
 from app.core.config import get_settings
 from app.core.exceptions import AuthenticationError
 
-
 password_hasher = PasswordHasher()
 
 REFRESH_TOKEN_BYTES = 32

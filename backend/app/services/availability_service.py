@@ -26,9 +26,7 @@ class AvailabilityService:
         self,
         provider: ProviderProfile,
     ) -> list[Availability]:
-        return self.repository.list_by_provider(
-            provider.id
-        )
+        return self.repository.list_by_provider(provider.id)
 
     def _check_overlap(
         self,
@@ -48,10 +46,7 @@ class AvailabilityService:
             if exclude_id is not None and item.id == exclude_id:
                 continue
 
-            overlaps = (
-                start_time < item.end_time
-                and end_time > item.start_time
-            )
+            overlaps = start_time < item.end_time and end_time > item.start_time
 
             if overlaps:
                 raise ConflictError(
@@ -119,9 +114,7 @@ class AvailabilityService:
         )
 
         end_time = (
-            request.end_time
-            if request.end_time is not None
-            else availability.end_time
+            request.end_time if request.end_time is not None else availability.end_time
         )
 
         if start_time >= end_time:

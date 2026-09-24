@@ -1,55 +1,51 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { login } from "../../api/auth";
-import { ApiError } from "../../api/client";
-import { useAuthStore } from "../../stores/auth";
+import { login } from '../../api/auth';
+import { ApiError } from '../../api/client';
+import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const email = ref("");
-const password = ref("");
+const email = ref('');
+const password = ref('');
 
 const isSubmitting = ref(false);
-const errorMessage = ref("");
+const errorMessage = ref('');
 const showPassword = ref(false);
 
 const canSubmit = computed(() => {
-  return (
-    email.value.trim().length > 0 &&
-    password.value.length > 0 &&
-    !isSubmitting.value
-  );
+  return email.value.trim().length > 0 && password.value.length > 0 && !isSubmitting.value;
 });
 
 function getDashboardRoute(role: string) {
   switch (role) {
-    case "CUSTOMER":
-      return { name: "customer" };
+    case 'CUSTOMER':
+      return { name: 'customer' };
 
-    case "PROVIDER":
-      return { name: "provider" };
+    case 'PROVIDER':
+      return { name: 'provider' };
 
-    case "ADMIN":
-      return { name: "admin" };
+    case 'ADMIN':
+      return { name: 'admin' };
 
     default:
-      return { name: "login" };
+      return { name: 'login' };
   }
 }
 
 async function handleSubmit(): Promise<void> {
-  errorMessage.value = "";
+  errorMessage.value = '';
 
   if (!email.value.trim()) {
-    errorMessage.value = "Please enter your email address.";
+    errorMessage.value = 'Please enter your email address.';
     return;
   }
 
   if (!password.value) {
-    errorMessage.value = "Please enter your password.";
+    errorMessage.value = 'Please enter your password.';
     return;
   }
 
@@ -61,20 +57,14 @@ async function handleSubmit(): Promise<void> {
       password: password.value,
     });
 
-    authStore.setSession(
-      response.user,
-      response.access_token,
-    );
+    authStore.setSession(response.user, response.access_token);
 
-    await router.replace(
-      getDashboardRoute(response.user.role),
-    );
+    await router.replace(getDashboardRoute(response.user.role));
   } catch (error) {
     if (error instanceof ApiError) {
       errorMessage.value = error.message;
     } else {
-      errorMessage.value =
-        "Something went wrong. Please try again.";
+      errorMessage.value = 'Something went wrong. Please try again.';
     }
   } finally {
     isSubmitting.value = false;
@@ -96,27 +86,16 @@ async function handleSubmit(): Promise<void> {
         <div class="auth-header">
           <h1>Welcome back</h1>
 
-          <p>
-            Sign in to your ServiceHub account.
-          </p>
+          <p>Sign in to your ServiceHub account.</p>
         </div>
 
-        <form
-          class="auth-form"
-          @submit.prevent="handleSubmit"
-        >
-          <div
-            v-if="errorMessage"
-            class="form-alert"
-            role="alert"
-          >
+        <form class="auth-form" @submit.prevent="handleSubmit">
+          <div v-if="errorMessage" class="form-alert" role="alert">
             {{ errorMessage }}
           </div>
 
           <div class="form-field">
-            <label for="login-email">
-              Email address
-            </label>
+            <label for="login-email"> Email address </label>
 
             <input
               id="login-email"
@@ -132,9 +111,7 @@ async function handleSubmit(): Promise<void> {
 
           <div class="form-field">
             <div class="field-label-row">
-              <label for="login-password">
-                Password
-              </label>
+              <label for="login-password"> Password </label>
 
               <button
                 type="button"
@@ -142,22 +119,14 @@ async function handleSubmit(): Promise<void> {
                 :disabled="isSubmitting"
                 @click="showPassword = !showPassword"
               >
-                {{
-                  showPassword
-                    ? "Hide"
-                    : "Show"
-                }}
+                {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
 
             <input
               id="login-password"
               v-model="password"
-              :type="
-                showPassword
-                  ? 'text'
-                  : 'password'
-              "
+              :type="showPassword ? 'text' : 'password'"
               name="password"
               autocomplete="current-password"
               placeholder="Enter your password"
@@ -166,29 +135,17 @@ async function handleSubmit(): Promise<void> {
             />
           </div>
 
-          <button
-            type="submit"
-            class="submit-button"
-            :disabled="!canSubmit"
-          >
-            <span v-if="isSubmitting">
-              Signing in...
-            </span>
+          <button type="submit" class="submit-button" :disabled="!canSubmit">
+            <span v-if="isSubmitting"> Signing in... </span>
 
-            <span v-else>
-              Sign in
-            </span>
+            <span v-else> Sign in </span>
           </button>
         </form>
 
         <div class="auth-footer">
-          <span>
-            Don't have an account?
-          </span>
+          <span> Don't have an account? </span>
 
-          <RouterLink to="/register">
-            Create an account
-          </RouterLink>
+          <RouterLink to="/register"> Create an account </RouterLink>
         </div>
       </section>
     </main>
@@ -294,13 +251,7 @@ async function handleSubmit(): Promise<void> {
 
 .form-field input:focus {
   border-color: var(--color-primary);
-  box-shadow:
-    0 0 0 3px
-    color-mix(
-      in srgb,
-      var(--color-focus-ring) 35%,
-      transparent
-    );
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus-ring) 35%, transparent);
 }
 
 .form-field input:disabled {
@@ -356,4 +307,3 @@ async function handleSubmit(): Promise<void> {
   }
 }
 </style>
-

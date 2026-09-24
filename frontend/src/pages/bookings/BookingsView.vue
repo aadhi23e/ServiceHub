@@ -1,33 +1,27 @@
 <script setup lang="ts">
-import { computed, onMounted } from "vue";
-import { useRouter } from "vue-router";
+import { computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 
-import BookingCard from "../../components/bookings/BookingCard.vue";
-import { useAuthStore } from "../../stores/auth.js";
-import { useBookingStore } from "../../stores/bookings.js";
-import type { Booking } from "../../types/booking.js";
+import BookingCard from '../../components/bookings/BookingCard.vue';
+import { useAuthStore } from '../../stores/auth.js';
+import { useBookingStore } from '../../stores/bookings.js';
+import type { Booking } from '../../types/booking.js';
 
 const router = useRouter();
 
 const authStore = useAuthStore();
 const bookingStore = useBookingStore();
 
-const isCustomer = computed(
-  () => authStore.role === "CUSTOMER",
-);
+const isCustomer = computed(() => authStore.role === 'CUSTOMER');
 
-const isProvider = computed(
-  () => authStore.role === "PROVIDER",
-);
+const isProvider = computed(() => authStore.role === 'PROVIDER');
 
-const isAdmin = computed(
-  () => authStore.role === "ADMIN",
-);
+const isAdmin = computed(() => authStore.role === 'ADMIN');
 
 const pageTitle = computed(() => {
-  if (isCustomer.value) return "My Bookings";
-  if (isProvider.value) return "Provider Bookings";
-  return "All Bookings";
+  if (isCustomer.value) return 'My Bookings';
+  if (isProvider.value) return 'Provider Bookings';
+  return 'All Bookings';
 });
 
 async function loadBookings(): Promise<void> {
@@ -48,7 +42,7 @@ async function loadBookings(): Promise<void> {
 
 function viewBooking(booking: Booking): void {
   router.push({
-    name: "booking-detail",
+    name: 'booking-detail',
     params: {
       bookingId: booking.id,
     },
@@ -56,9 +50,7 @@ function viewBooking(booking: Booking): void {
 }
 
 async function cancelBooking(booking: Booking): Promise<void> {
-  const confirmed = window.confirm(
-    `Cancel booking #${booking.id}?`,
-  );
+  const confirmed = window.confirm(`Cancel booking #${booking.id}?`);
 
   if (!confirmed) {
     return;
@@ -79,9 +71,7 @@ async function startBooking(booking: Booking): Promise<void> {
   await bookingStore.start(booking.id);
 }
 
-async function completeBooking(
-  booking: Booking,
-): Promise<void> {
+async function completeBooking(booking: Booking): Promise<void> {
   await bookingStore.complete(booking.id);
 }
 
@@ -94,9 +84,7 @@ onMounted(loadBookings);
       class="bookings-page__header flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between"
     >
       <div class="bookings-page__heading">
-        <p class="bookings-page__eyebrow">
-          ServiceHub
-        </p>
+        <p class="bookings-page__eyebrow">ServiceHub</p>
 
         <h1>{{ pageTitle }}</h1>
 
@@ -122,36 +110,21 @@ onMounted(loadBookings);
     >
       <span>{{ bookingStore.error }}</span>
 
-      <button
-        type="button"
-        class="bookings-page__dismiss"
-        @click="bookingStore.clearError"
-      >
+      <button type="button" class="bookings-page__dismiss" @click="bookingStore.clearError">
         Dismiss
       </button>
     </div>
 
-    <div
-      v-if="bookingStore.loading"
-      class="bookings-page__loading"
-      aria-live="polite"
-    >
+    <div v-if="bookingStore.loading" class="bookings-page__loading" aria-live="polite">
       Loading bookings...
     </div>
 
-    <div
-      v-else-if="!bookingStore.hasBookings"
-      class="bookings-page__empty"
-    >
+    <div v-else-if="!bookingStore.hasBookings" class="bookings-page__empty">
       <h2>No bookings yet</h2>
 
-      <p v-if="isCustomer">
-        You don't have any bookings yet.
-      </p>
+      <p v-if="isCustomer">You don't have any bookings yet.</p>
 
-      <p v-else>
-        There are currently no bookings to display.
-      </p>
+      <p v-else>There are currently no bookings to display.</p>
 
       <button
         v-if="isCustomer"
@@ -172,9 +145,7 @@ onMounted(loadBookings);
         v-for="booking in bookingStore.bookings"
         :key="booking.id"
         :booking="booking"
-        :can-cancel="
-          isCustomer || isProvider || isAdmin
-        "
+        :can-cancel="isCustomer || isProvider || isAdmin"
         :can-manage="isProvider || isAdmin"
         :action-loading="bookingStore.actionLoading"
         @view="viewBooking"

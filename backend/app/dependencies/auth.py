@@ -52,6 +52,7 @@ def get_current_user_payload(
 ) -> dict[str, Any]:
     return decode_access_token(token)
 
+
 def get_current_user(
     payload: Annotated[
         dict[str, Any],

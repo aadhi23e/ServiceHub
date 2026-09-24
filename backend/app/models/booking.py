@@ -22,7 +22,8 @@ if TYPE_CHECKING:
     from app.models.review import Review
     from app.models.service import Service
     from app.models.user import User
-    
+
+
 class Booking(Base):
     __tablename__ = "bookings"
 
@@ -75,9 +76,7 @@ class Booking(Base):
             "ix_bookings_active_provider_start",
             "provider_id",
             "start_at",
-            postgresql_where=text(
-                "status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')"
-            ),
+            postgresql_where=text("status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')"),
         ),
         ExcludeConstraint(
             (
@@ -89,9 +88,7 @@ class Booking(Base):
                 "&&",
             ),
             name="no_provider_overlapping_bookings",
-            where=text(
-                "status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')"
-            ),
+            where=text("status IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')"),
             using="gist",
         ),
     )

@@ -40,6 +40,7 @@ class UserUpdateRequest(BaseModel):
         max_length=30,
     )
 
+
 class AdminUserUpdateRequest(BaseModel):
     first_name: str | None = None
     last_name: str | None = None

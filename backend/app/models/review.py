@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from app.models.provider import ProviderProfile
     from app.models.user import User
 
+
 class Review(Base):
     __tablename__ = "reviews"
 

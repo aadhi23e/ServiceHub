@@ -24,6 +24,7 @@ def servicehub_error():
 def unexpected_error():
     raise RuntimeError("This should never be exposed to the client.")
 
+
 @router.get("/rate-limited")
 def rate_limited_error():
     raise RateLimitError(
@@ -34,15 +35,12 @@ def rate_limited_error():
     )
 
 
-
 app.include_router(router)
 
 client = TestClient(
     app,
     raise_server_exceptions=False,
 )
-
-
 
 
 def test_servicehub_error_response():
@@ -97,6 +95,7 @@ def test_unhandled_error_response():
 
     assert "This should never be exposed" not in response.text
 
+
 def test_rate_limit_error_response():
     response = client.get("/test-errors/rate-limited")
 
@@ -105,10 +104,7 @@ def test_rate_limit_error_response():
     body = response.json()
 
     assert body["error"]["code"] == "RATE_LIMITED"
-    assert (
-        body["error"]["message"]
-        == "Too many requests. Please try again later."
-    )
+    assert body["error"]["message"] == "Too many requests. Please try again later."
 
     assert body["error"]["request_id"].startswith("req_")
 
@@ -117,6 +113,7 @@ def test_rate_limit_error_response():
     assert response.headers["RateLimit-Remaining"] == "0"
     assert response.headers["RateLimit-Reset"] == "37"
     assert response.headers["X-Request-ID"].startswith("req_")
+
 
 def test_rate_limit_error_preserves_request_id():
     request_id = "req_rate_limit_test_123"

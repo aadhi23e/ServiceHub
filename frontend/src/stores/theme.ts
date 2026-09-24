@@ -1,42 +1,35 @@
-import { defineStore } from "pinia";
-import { computed, ref, watch } from "vue";
+import { defineStore } from 'pinia';
+import { computed, ref, watch } from 'vue';
 
-export type ThemeMode = "system" | "light" | "dark";
+export type ThemeMode = 'system' | 'light' | 'dark';
 
-const STORAGE_KEY = "servicehub-theme";
+const STORAGE_KEY = 'servicehub-theme';
 
 function getStoredTheme(): ThemeMode {
   const storedTheme = localStorage.getItem(STORAGE_KEY);
 
-  if (
-    storedTheme === "system" ||
-    storedTheme === "light" ||
-    storedTheme === "dark"
-  ) {
+  if (storedTheme === 'system' || storedTheme === 'light' || storedTheme === 'dark') {
     return storedTheme;
   }
 
-  return "system";
+  return 'system';
 }
 
-function getSystemTheme(): "light" | "dark" {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+function getSystemTheme(): 'light' | 'dark' {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 }
 
-export const useThemeStore = defineStore("theme", () => {
+export const useThemeStore = defineStore('theme', () => {
   const mode = ref<ThemeMode>(getStoredTheme());
 
-  const resolvedTheme = ref<"light" | "dark">(
-    mode.value === "system" ? getSystemTheme() : mode.value,
+  const resolvedTheme = ref<'light' | 'dark'>(
+    mode.value === 'system' ? getSystemTheme() : mode.value
   );
 
-  const isDark = computed(() => resolvedTheme.value === "dark");
+  const isDark = computed(() => resolvedTheme.value === 'dark');
 
   function updateResolvedTheme(): void {
-    resolvedTheme.value =
-      mode.value === "system" ? getSystemTheme() : mode.value;
+    resolvedTheme.value = mode.value === 'system' ? getSystemTheme() : mode.value;
   }
 
   function applyTheme(): void {
@@ -55,12 +48,10 @@ export const useThemeStore = defineStore("theme", () => {
     updateResolvedTheme();
     applyTheme();
 
-    const mediaQuery = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    );
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-    mediaQuery.addEventListener("change", () => {
-      if (mode.value === "system") {
+    mediaQuery.addEventListener('change', () => {
+      if (mode.value === 'system') {
         updateResolvedTheme();
         applyTheme();
       }

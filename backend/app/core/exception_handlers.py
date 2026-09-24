@@ -39,10 +39,10 @@ def _error_response(
         error["details"] = details
 
     return JSONResponse(
-    status_code=status_code,
-    content={"error": error},
-    headers=headers,
-)
+        status_code=status_code,
+        content={"error": error},
+        headers=headers,
+    )
 
 
 async def servicehub_exception_handler(
@@ -81,6 +81,7 @@ async def servicehub_exception_handler(
         details=exc.details,
         headers=headers,
     )
+
 
 async def http_exception_handler(
     request: Request,

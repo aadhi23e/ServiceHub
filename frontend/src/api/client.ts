@@ -1,13 +1,10 @@
-import { useAuthStore } from "../stores/auth";
-import { pinia } from "../app/pinia";
+import { useAuthStore } from '../stores/auth';
+import { pinia } from '../app/pinia';
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 if (!API_BASE_URL) {
-  throw new Error(
-    "VITE_API_BASE_URL is not configured.",
-  );
+  throw new Error('VITE_API_BASE_URL is not configured.');
 }
 
 export interface ApiValidationError {
@@ -17,10 +14,7 @@ export interface ApiValidationError {
 }
 
 export interface ApiErrorBody {
-  detail?:
-    | string
-    | ApiValidationError[]
-    | unknown;
+  detail?: string | ApiValidationError[] | unknown;
 
   code?: string;
   message?: string;
@@ -31,15 +25,10 @@ export class ApiError extends Error {
   readonly code: string | null;
   readonly body: unknown;
 
-  constructor(
-    message: string,
-    status: number,
-    code: string | null = null,
-    body: unknown = null,
-  ) {
+  constructor(message: string, status: number, code: string | null = null, body: unknown = null) {
     super(message);
 
-    this.name = "ApiError";
+    this.name = 'ApiError';
     this.status = status;
     this.code = code;
     this.body = body;
@@ -70,8 +59,7 @@ export class ApiError extends Error {
   }
 }
 
-export interface ApiRequestOptions
-  extends RequestInit {
+export interface ApiRequestOptions extends RequestInit {
   skipAuth?: boolean;
 }
 
@@ -82,19 +70,12 @@ export interface ApiRequestOptions
  * requests 2-5 reuse this same Promise instead
  * of creating four additional refresh requests.
  */
-let refreshPromise:
-  | Promise<string | null>
-  | null = null;
+let refreshPromise: Promise<string | null> | null = null;
 
-async function parseResponseBody(
-  response: Response,
-): Promise<unknown> {
-  const contentType =
-    response.headers.get("content-type");
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get('content-type');
 
-  if (
-    contentType?.includes("application/json")
-  ) {
+  if (contentType?.includes('application/json')) {
     try {
       return await response.json();
     } catch {
@@ -107,19 +88,11 @@ async function parseResponseBody(
   return text || null;
 }
 
-function extractApiErrorCode(
-  body: unknown,
-): string | null {
-  if (
-    body &&
-    typeof body === "object" &&
-    "code" in body
-  ) {
-    const code = (
-      body as { code?: unknown }
-    ).code;
+function extractApiErrorCode(body: unknown): string | null {
+  if (body && typeof body === 'object' && 'code' in body) {
+    const code = (body as { code?: unknown }).code;
 
-    if (typeof code === "string") {
+    if (typeof code === 'string') {
       return code;
     }
   }
@@ -127,70 +100,55 @@ function extractApiErrorCode(
   return null;
 }
 
-function extractApiErrorMessage(
-  status: number,
-  body: unknown,
-): string {
-  if (
-    body &&
-    typeof body === "object" &&
-    "detail" in body
-  ) {
-    const detail = (
-      body as ApiErrorBody
-    ).detail;
+function extractApiErrorMessage(status: number, body: unknown): string {
+  if (body && typeof body === 'object' && 'detail' in body) {
+    const detail = (body as ApiErrorBody).detail;
 
-    if (typeof detail === "string") {
+    if (typeof detail === 'string') {
       return detail;
     }
 
     if (Array.isArray(detail)) {
-      return "Please check the information you entered.";
+      return 'Please check the information you entered.';
     }
   }
 
-  if (
-    body &&
-    typeof body === "object" &&
-    "message" in body
-  ) {
-    const message = (
-      body as { message?: unknown }
-    ).message;
+  if (body && typeof body === 'object' && 'message' in body) {
+    const message = (body as { message?: unknown }).message;
 
-    if (typeof message === "string") {
+    if (typeof message === 'string') {
       return message;
     }
   }
 
   switch (status) {
     case 400:
-      return "The request could not be processed.";
+      return 'The request could not be processed.';
 
     case 401:
-      return "Your session has expired. Please sign in again.";
+      return 'Your session has expired. Please sign in again.';
 
     case 403:
-      return "You do not have permission to perform this action.";
+      return 'You do not have permission to perform this action.';
 
     case 404:
-      return "The requested resource was not found.";
+      return 'The requested resource was not found.';
 
     case 409:
-      return "This information already exists.";
+      return 'This information already exists.';
 
     case 422:
-      return "Please check the information you entered.";
+      return 'Please check the information you entered.';
 
     case 429:
-      return "Too many requests. Please try again later.";
+      return 'Too many requests. Please try again later.';
 
     default:
       if (status >= 500) {
-        return "Something went wrong on the server.";
+        return 'Something went wrong on the server.';
       }
 
-      return "The request could not be completed.";
+      return 'The request could not be completed.';
   }
 }
 
@@ -209,42 +167,31 @@ async function refreshAccessToken(): Promise<string | null> {
 
   refreshPromise = (async () => {
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/auth/refresh`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            Accept: "application/json",
-          },
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          Accept: 'application/json',
         },
-      );
+      });
 
-      const body =
-        await parseResponseBody(response);
+      const body = await parseResponseBody(response);
 
       if (!response.ok) {
         throw new ApiError(
-          extractApiErrorMessage(
-            response.status,
-            body,
-          ),
+          extractApiErrorMessage(response.status, body),
           response.status,
           extractApiErrorCode(body),
-          body,
+          body
         );
       }
 
-      if (
-        !body ||
-        typeof body !== "object" ||
-        !("access_token" in body)
-      ) {
+      if (!body || typeof body !== 'object' || !('access_token' in body)) {
         throw new ApiError(
-          "The server returned an invalid authentication response.",
+          'The server returned an invalid authentication response.',
           500,
-          "INVALID_AUTH_RESPONSE",
-          body,
+          'INVALID_AUTH_RESPONSE',
+          body
         );
       }
 
@@ -254,23 +201,18 @@ async function refreshAccessToken(): Promise<string | null> {
         }
       ).access_token;
 
-      if (
-        typeof accessToken !== "string" ||
-        accessToken.length === 0
-      ) {
+      if (typeof accessToken !== 'string' || accessToken.length === 0) {
         throw new ApiError(
-          "The server returned an invalid access token.",
+          'The server returned an invalid access token.',
           500,
-          "INVALID_ACCESS_TOKEN",
-          body,
+          'INVALID_ACCESS_TOKEN',
+          body
         );
       }
 
       const authStore = useAuthStore(pinia);
 
-      authStore.setAccessToken(
-        accessToken,
-      );
+      authStore.setAccessToken(accessToken);
 
       return accessToken;
     } catch {
@@ -293,28 +235,17 @@ async function redirectToLogin(): Promise<void> {
    *
    * router -> auth store -> api -> router
    */
-  const { default: router } =
-    await import("../router");
+  const { default: router } = await import('../router');
 
-  if (
-    router.currentRoute.value.name !==
-    "login"
-  ) {
+  if (router.currentRoute.value.name !== 'login') {
     await router.replace({
-      name: "login",
+      name: 'login',
     });
   }
 }
 
-export async function apiRequest<T>(
-  path: string,
-  options: ApiRequestOptions = {},
-): Promise<T> {
-  const {
-    skipAuth = false,
-    headers,
-    ...requestInit
-  } = options;
+export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
+  const { skipAuth = false, headers, ...requestInit } = options;
 
   const authStore = useAuthStore(pinia);
 
@@ -324,61 +255,37 @@ export async function apiRequest<T>(
    * Request bodies such as JSON strings can be reused,
    * unlike a consumed Request object.
    */
-  const requestHeaders = new Headers(
-    headers,
-  );
+  const requestHeaders = new Headers(headers);
 
-  if (
-    requestInit.body &&
-    !requestHeaders.has("Content-Type")
-  ) {
-    requestHeaders.set(
-      "Content-Type",
-      "application/json",
-    );
+  if (requestInit.body && !requestHeaders.has('Content-Type')) {
+    requestHeaders.set('Content-Type', 'application/json');
   }
 
-  async function executeRequest(
-    token: string | null,
-  ): Promise<Response> {
-    const currentHeaders =
-      new Headers(requestHeaders);
+  async function executeRequest(token: string | null): Promise<Response> {
+    const currentHeaders = new Headers(requestHeaders);
 
-    if (
-      !skipAuth &&
-      token
-    ) {
-      currentHeaders.set(
-        "Authorization",
-        `Bearer ${token}`,
-      );
+    if (!skipAuth && token) {
+      currentHeaders.set('Authorization', `Bearer ${token}`);
     } else {
-      currentHeaders.delete(
-        "Authorization",
-      );
+      currentHeaders.delete('Authorization');
     }
 
-    return fetch(
-      `${API_BASE_URL}${path}`,
-      {
-        ...requestInit,
-        headers: currentHeaders,
-        credentials: "include",
-      },
-    );
+    return fetch(`${API_BASE_URL}${path}`, {
+      ...requestInit,
+      headers: currentHeaders,
+      credentials: 'include',
+    });
   }
 
   let response: Response;
 
   try {
-    response = await executeRequest(
-      authStore.accessToken,
-    );
+    response = await executeRequest(authStore.accessToken);
   } catch {
     throw new ApiError(
-      "Unable to connect to ServiceHub. Please check your connection and try again.",
+      'Unable to connect to ServiceHub. Please check your connection and try again.',
       0,
-      "NETWORK_ERROR",
+      'NETWORK_ERROR'
     );
   }
 
@@ -388,12 +295,8 @@ export async function apiRequest<T>(
    *
    * Login/register/refresh/logout requests use skipAuth.
    */
-  if (
-    response.status === 401 &&
-    !skipAuth
-  ) {
-    const newAccessToken =
-      await refreshAccessToken();
+  if (response.status === 401 && !skipAuth) {
+    const newAccessToken = await refreshAccessToken();
 
     /*
      * Refresh token is invalid/expired/revoked.
@@ -403,41 +306,31 @@ export async function apiRequest<T>(
     if (!newAccessToken) {
       await redirectToLogin();
 
-      throw new ApiError(
-        "Your session has expired. Please sign in again.",
-        401,
-        "SESSION_EXPIRED",
-      );
+      throw new ApiError('Your session has expired. Please sign in again.', 401, 'SESSION_EXPIRED');
     }
 
     /*
      * Retry the original request exactly once.
      */
     try {
-      response = await executeRequest(
-        newAccessToken,
-      );
+      response = await executeRequest(newAccessToken);
     } catch {
       throw new ApiError(
-        "Unable to connect to ServiceHub. Please check your connection and try again.",
+        'Unable to connect to ServiceHub. Please check your connection and try again.',
         0,
-        "NETWORK_ERROR",
+        'NETWORK_ERROR'
       );
     }
   }
 
-  const body =
-    await parseResponseBody(response);
+  const body = await parseResponseBody(response);
 
   if (!response.ok) {
     throw new ApiError(
-      extractApiErrorMessage(
-        response.status,
-        body,
-      ),
+      extractApiErrorMessage(response.status, body),
       response.status,
       extractApiErrorCode(body),
-      body,
+      body
     );
   }
 

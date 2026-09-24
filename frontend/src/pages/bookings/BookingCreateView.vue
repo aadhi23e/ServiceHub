@@ -1,36 +1,32 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-import { useBookingStore } from "../../stores/bookings";
+import { useBookingStore } from '../../stores/bookings';
 
 const router = useRouter();
 const bookingStore = useBookingStore();
 
-const providerId = ref("");
-const serviceId = ref("");
-const startAt = ref("");
-const endAt = ref("");
-const customerNotes = ref("");
+const providerId = ref('');
+const serviceId = ref('');
+const startAt = ref('');
+const endAt = ref('');
+const customerNotes = ref('');
 
 const formError = ref<string | null>(null);
 
-const isSubmitting = computed(
-  () => bookingStore.actionLoading,
-);
+const isSubmitting = computed(() => bookingStore.actionLoading);
 
 function validateForm(): boolean {
   formError.value = null;
 
   if (!providerId.value || !serviceId.value) {
-    formError.value =
-      "Provider and service are required.";
+    formError.value = 'Provider and service are required.';
     return false;
   }
 
   if (!startAt.value || !endAt.value) {
-    formError.value =
-      "Start and end times are required.";
+    formError.value = 'Start and end times are required.';
     return false;
   }
 
@@ -38,20 +34,17 @@ function validateForm(): boolean {
   const end = new Date(endAt.value);
 
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    formError.value =
-      "Please enter valid booking times.";
+    formError.value = 'Please enter valid booking times.';
     return false;
   }
 
   if (start <= new Date()) {
-    formError.value =
-      "The booking start time must be in the future.";
+    formError.value = 'The booking start time must be in the future.';
     return false;
   }
 
   if (end <= start) {
-    formError.value =
-      "The end time must be later than the start time.";
+    formError.value = 'The end time must be later than the start time.';
     return false;
   }
 
@@ -72,8 +65,7 @@ async function submit(): Promise<void> {
     service_id: Number(serviceId.value),
     start_at: toIsoDateTime(startAt.value),
     end_at: toIsoDateTime(endAt.value),
-    customer_notes:
-      customerNotes.value.trim() || null,
+    customer_notes: customerNotes.value.trim() || null,
   });
 
   if (!booking) {
@@ -81,7 +73,7 @@ async function submit(): Promise<void> {
   }
 
   router.replace({
-    name: "booking-detail",
+    name: 'booking-detail',
     params: {
       bookingId: booking.id,
     },
@@ -98,18 +90,10 @@ function cancel(): void {
     <header
       class="booking-create-page__header flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6"
     >
-      <button
-        type="button"
-        class="booking-create-page__back-button"
-        @click="cancel"
-      >
-        ← Back
-      </button>
+      <button type="button" class="booking-create-page__back-button" @click="cancel">← Back</button>
 
       <div>
-        <p class="booking-create-page__eyebrow">
-          ServiceHub
-        </p>
+        <p class="booking-create-page__eyebrow">ServiceHub</p>
 
         <h1>Book a service</h1>
 
@@ -119,32 +103,19 @@ function cancel(): void {
       </div>
     </header>
 
-    <form
-      class="booking-form"
-      @submit.prevent="submit"
-    >
-      <div
-        v-if="formError"
-        class="booking-form__error"
-        role="alert"
-      >
+    <form class="booking-form" @submit.prevent="submit">
+      <div v-if="formError" class="booking-form__error" role="alert">
         {{ formError }}
       </div>
 
-      <div
-        v-if="bookingStore.error"
-        class="booking-form__error"
-        role="alert"
-      >
+      <div v-if="bookingStore.error" class="booking-form__error" role="alert">
         {{ bookingStore.error }}
       </div>
 
       <div class="booking-form__fields grid grid-cols-1 gap-5 md:grid-cols-2">
         <!-- Provider -->
         <div class="booking-form__field">
-          <label for="provider-id">
-            Provider ID
-          </label>
+          <label for="provider-id"> Provider ID </label>
 
           <input
             id="provider-id"
@@ -156,16 +127,14 @@ function cancel(): void {
           />
 
           <p class="booking-form__help">
-            Provider selection will be replaced with the provider
-            catalog when that API is implemented.
+            Provider selection will be replaced with the provider catalog when that API is
+            implemented.
           </p>
         </div>
 
         <!-- Service -->
         <div class="booking-form__field">
-          <label for="service-id">
-            Service ID
-          </label>
+          <label for="service-id"> Service ID </label>
 
           <input
             id="service-id"
@@ -177,44 +146,28 @@ function cancel(): void {
           />
 
           <p class="booking-form__help">
-            Service selection will be replaced with the service
-            catalog when that API is implemented.
+            Service selection will be replaced with the service catalog when that API is
+            implemented.
           </p>
         </div>
 
         <!-- Start -->
         <div class="booking-form__field">
-          <label for="start-at">
-            Start time
-          </label>
+          <label for="start-at"> Start time </label>
 
-          <input
-            id="start-at"
-            v-model="startAt"
-            type="datetime-local"
-            required
-          />
+          <input id="start-at" v-model="startAt" type="datetime-local" required />
         </div>
 
         <!-- End -->
         <div class="booking-form__field">
-          <label for="end-at">
-            End time
-          </label>
+          <label for="end-at"> End time </label>
 
-          <input
-            id="end-at"
-            v-model="endAt"
-            type="datetime-local"
-            required
-          />
+          <input id="end-at" v-model="endAt" type="datetime-local" required />
         </div>
 
         <!-- Notes -->
         <div class="booking-form__field md:col-span-2">
-          <label for="customer-notes">
-            Notes
-          </label>
+          <label for="customer-notes"> Notes </label>
 
           <textarea
             id="customer-notes"
@@ -226,9 +179,7 @@ function cancel(): void {
         </div>
       </div>
 
-      <div
-        class="booking-form__actions flex flex-col-reverse gap-3 sm:flex-row sm:justify-end"
-      >
+      <div class="booking-form__actions flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         <button
           type="button"
           class="booking-form__button booking-form__button--secondary"
@@ -243,13 +194,9 @@ function cancel(): void {
           class="booking-form__button booking-form__button--primary"
           :disabled="isSubmitting"
         >
-          <span v-if="isSubmitting">
-            Creating booking...
-          </span>
+          <span v-if="isSubmitting"> Creating booking... </span>
 
-          <span v-else>
-            Book service
-          </span>
+          <span v-else> Book service </span>
         </button>
       </div>
     </form>
@@ -436,8 +383,7 @@ function cancel(): void {
 
   outline: none;
 
-  box-shadow:
-    0 0 0 3px var(--color-primary-soft);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .booking-form__field input:disabled,

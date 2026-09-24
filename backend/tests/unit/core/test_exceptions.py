@@ -77,6 +77,7 @@ def test_custom_servicehub_error():
     assert error.code == "BOOKING_SLOT_UNAVAILABLE"
     assert error.message == "The booking conflicts with another booking."
 
+
 def test_rate_limit_error_supports_retry_after():
     error = RateLimitError(
         retry_after=37,
@@ -95,6 +96,7 @@ def test_rate_limit_error_clamps_negative_retry_after():
 
     assert error.retry_after == 0
 
+
 def test_rate_limit_error_supports_rate_limit_metadata():
     error = RateLimitError(
         retry_after=37,
@@ -105,14 +107,13 @@ def test_rate_limit_error_supports_rate_limit_metadata():
 
     assert error.status_code == 429
     assert error.code == "RATE_LIMITED"
-    assert error.message == (
-        "Too many requests. Please try again later."
-    )
+    assert error.message == ("Too many requests. Please try again later.")
 
     assert error.retry_after == 37
     assert error.limit == 100
     assert error.remaining == 0
     assert error.policy == "general"
+
 
 def test_rate_limit_error_clamps_metadata():
     error = RateLimitError(

@@ -146,6 +146,7 @@ def test_login_then_logout(
         is None
     )
 
+
 def test_refresh_requires_refresh_cookie(client):
     response = client.post(
         "/api/v1/auth/refresh",
@@ -156,9 +157,7 @@ def test_refresh_requires_refresh_cookie(client):
     body = response.json()
 
     assert body["error"]["code"] == "AUTHENTICATION_FAILED"
-    assert body["error"]["message"] == (
-        "Refresh token is required."
-    )
+    assert body["error"]["message"] == ("Refresh token is required.")
 
 
 def test_refresh_rotates_refresh_token(
@@ -199,9 +198,12 @@ def test_refresh_rotates_refresh_token(
         old_refresh_token,
     )
 
-    assert redis_client.get(
-        f"auth:session:{old_refresh_hash}",
-    ) is not None
+    assert (
+        redis_client.get(
+            f"auth:session:{old_refresh_hash}",
+        )
+        is not None
+    )
 
     refresh_response = client.post(
         "/api/v1/auth/refresh",
@@ -228,14 +230,20 @@ def test_refresh_rotates_refresh_token(
     )
 
     # OLD token must be gone.
-    assert redis_client.get(
-        f"auth:session:{old_refresh_hash}",
-    ) is None
+    assert (
+        redis_client.get(
+            f"auth:session:{old_refresh_hash}",
+        )
+        is None
+    )
 
     # NEW token must exist.
-    assert redis_client.get(
-        f"auth:session:{new_refresh_hash}",
-    ) is not None
+    assert (
+        redis_client.get(
+            f"auth:session:{new_refresh_hash}",
+        )
+        is not None
+    )
 
 
 def test_old_refresh_token_cannot_be_reused(
@@ -291,13 +299,8 @@ def test_old_refresh_token_cannot_be_reused(
 
     body = reuse_response.json()
 
-    assert body["error"]["code"] == (
-        "AUTHENTICATION_FAILED"
-    )
-    assert body["error"]["message"] == (
-        "Invalid or expired refresh token."
-    )
-
+    assert body["error"]["code"] == ("AUTHENTICATION_FAILED")
+    assert body["error"]["message"] == ("Invalid or expired refresh token.")
 
 
 def test_refresh_rejects_suspended_user(

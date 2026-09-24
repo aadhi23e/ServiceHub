@@ -16,7 +16,6 @@ from app.schemas.booking import (
     BookingResponse,
 )
 
-
 router = APIRouter(
     prefix="/bookings",
     tags=["bookings"],

@@ -1,5 +1,5 @@
-import { computed, ref } from "vue";
-import { defineStore } from "pinia";
+import { computed, ref } from 'vue';
+import { defineStore } from 'pinia';
 
 import {
   cancelBooking,
@@ -12,14 +12,11 @@ import {
   getProviderBookings,
   rejectBooking,
   startBooking,
-} from "../api/bookings";
+} from '../api/bookings';
 
-import type {
-  Booking,
-  BookingCreateRequest,
-} from "../types/booking";
+import type { Booking, BookingCreateRequest } from '../types/booking';
 
-export const useBookingStore = defineStore("bookings", () => {
+export const useBookingStore = defineStore('bookings', () => {
   const bookings = ref<Booking[]>([]);
   const selectedBooking = ref<Booking | null>(null);
 
@@ -27,9 +24,7 @@ export const useBookingStore = defineStore("bookings", () => {
   const actionLoading = ref(false);
   const error = ref<string | null>(null);
 
-  const hasBookings = computed(
-    () => bookings.value.length > 0,
-  );
+  const hasBookings = computed(() => bookings.value.length > 0);
 
   function setError(value: unknown): void {
     if (value instanceof Error) {
@@ -37,7 +32,7 @@ export const useBookingStore = defineStore("bookings", () => {
       return;
     }
 
-    error.value = "Something went wrong. Please try again.";
+    error.value = 'Something went wrong. Please try again.';
   }
 
   function clearError(): void {
@@ -45,9 +40,7 @@ export const useBookingStore = defineStore("bookings", () => {
   }
 
   function replaceBooking(updatedBooking: Booking): void {
-    const index = bookings.value.findIndex(
-      (booking) => booking.id === updatedBooking.id,
-    );
+    const index = bookings.value.findIndex((booking) => booking.id === updatedBooking.id);
 
     if (index !== -1) {
       bookings.value[index] = updatedBooking;
@@ -97,9 +90,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function fetchBooking(
-    bookingId: number,
-  ): Promise<Booking | null> {
+  async function fetchBooking(bookingId: number): Promise<Booking | null> {
     loading.value = true;
     clearError();
 
@@ -115,9 +106,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function create(
-    payload: BookingCreateRequest,
-  ): Promise<Booking | null> {
+  async function create(payload: BookingCreateRequest): Promise<Booking | null> {
     actionLoading.value = true;
     clearError();
 
@@ -135,9 +124,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function confirm(
-    bookingId: number,
-  ): Promise<boolean> {
+  async function confirm(bookingId: number): Promise<boolean> {
     actionLoading.value = true;
     clearError();
 
@@ -153,9 +140,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function reject(
-    bookingId: number,
-  ): Promise<boolean> {
+  async function reject(bookingId: number): Promise<boolean> {
     actionLoading.value = true;
     clearError();
 
@@ -171,9 +156,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function start(
-    bookingId: number,
-  ): Promise<boolean> {
+  async function start(bookingId: number): Promise<boolean> {
     actionLoading.value = true;
     clearError();
 
@@ -189,9 +172,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function complete(
-    bookingId: number,
-  ): Promise<boolean> {
+  async function complete(bookingId: number): Promise<boolean> {
     actionLoading.value = true;
     clearError();
 
@@ -207,9 +188,7 @@ export const useBookingStore = defineStore("bookings", () => {
     }
   }
 
-  async function cancel(
-    bookingId: number,
-  ): Promise<boolean> {
+  async function cancel(bookingId: number): Promise<boolean> {
     actionLoading.value = true;
     clearError();
 

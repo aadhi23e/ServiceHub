@@ -1,6 +1,6 @@
-import type { UserRole } from "./router";
+import type { UserRole } from './router';
 
-export type UserStatus = "ACTIVE" | "SUSPENDED";
+export type UserStatus = 'ACTIVE' | 'SUSPENDED';
 
 export interface AuthUser {
   id: number;

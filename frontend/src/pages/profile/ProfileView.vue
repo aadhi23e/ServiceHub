@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { useUserStore } from "../../stores/users";
+import { computed, onMounted, ref } from 'vue';
+import { useUserStore } from '../../stores/users';
 
 const userStore = useUserStore();
 
-const firstName = ref("");
-const lastName = ref("");
-const phone = ref("");
+const firstName = ref('');
+const lastName = ref('');
+const phone = ref('');
 
-const successMessage = ref("");
-const localError = ref("");
+const successMessage = ref('');
+const localError = ref('');
 const isEditing = ref(false);
 
 const hasChanges = computed(() => {
@@ -20,24 +20,24 @@ const hasChanges = computed(() => {
   return (
     firstName.value !== userStore.user.first_name ||
     lastName.value !== userStore.user.last_name ||
-    phone.value !== (userStore.user.phone ?? "")
+    phone.value !== (userStore.user.phone ?? '')
   );
 });
 
 const initials = computed(() => {
   if (!userStore.user) {
-    return "?";
+    return '?';
   }
 
-  const first = userStore.user.first_name?.trim().charAt(0) ?? "";
-  const last = userStore.user.last_name?.trim().charAt(0) ?? "";
+  const first = userStore.user.first_name?.trim().charAt(0) ?? '';
+  const last = userStore.user.last_name?.trim().charAt(0) ?? '';
 
-  return `${first}${last}`.toUpperCase() || "?";
+  return `${first}${last}`.toUpperCase() || '?';
 });
 
 const fullName = computed(() => {
   if (!userStore.user) {
-    return "Your Profile";
+    return 'Your Profile';
   }
 
   return `${userStore.user.first_name} ${userStore.user.last_name}`.trim();
@@ -45,7 +45,7 @@ const fullName = computed(() => {
 
 const roleLabel = computed(() => {
   if (!userStore.user) {
-    return "";
+    return '';
   }
 
   return formatRole(userStore.user.role);
@@ -53,7 +53,7 @@ const roleLabel = computed(() => {
 
 const statusLabel = computed(() => {
   if (!userStore.user) {
-    return "";
+    return '';
   }
 
   return formatStatus(userStore.user.status);
@@ -62,30 +62,28 @@ const statusLabel = computed(() => {
 function formatRole(role: string): string {
   return role
     .toLowerCase()
-    .replace(/_/g, " ")
+    .replace(/_/g, ' ')
     .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function formatStatus(status: string): string {
-  return status
-    .toLowerCase()
-    .replace(/\b\w/g, (character) => character.toUpperCase());
+  return status.toLowerCase().replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function formatDate(value: string | null): string {
   if (!value) {
-    return "Not available";
+    return 'Not available';
   }
 
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return "Not available";
+    return 'Not available';
   }
 
   return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(date);
 }
 
@@ -96,20 +94,20 @@ function populateForm(): void {
 
   firstName.value = userStore.user.first_name;
   lastName.value = userStore.user.last_name;
-  phone.value = userStore.user.phone ?? "";
+  phone.value = userStore.user.phone ?? '';
 }
 
 function startEditing(): void {
-  successMessage.value = "";
-  localError.value = "";
+  successMessage.value = '';
+  localError.value = '';
   isEditing.value = true;
 }
 
 function cancelEditing(): void {
   populateForm();
 
-  successMessage.value = "";
-  localError.value = "";
+  successMessage.value = '';
+  localError.value = '';
   isEditing.value = false;
 }
 
@@ -118,20 +116,20 @@ async function saveProfile(): Promise<void> {
     return;
   }
 
-  successMessage.value = "";
-  localError.value = "";
+  successMessage.value = '';
+  localError.value = '';
 
   const trimmedFirstName = firstName.value.trim();
   const trimmedLastName = lastName.value.trim();
   const trimmedPhone = phone.value.trim();
 
   if (!trimmedFirstName) {
-    localError.value = "First name is required.";
+    localError.value = 'First name is required.';
     return;
   }
 
   if (!trimmedLastName) {
-    localError.value = "Last name is required.";
+    localError.value = 'Last name is required.';
     return;
   }
 
@@ -145,22 +143,20 @@ async function saveProfile(): Promise<void> {
     populateForm();
 
     isEditing.value = false;
-    successMessage.value = "Your profile has been updated.";
+    successMessage.value = 'Your profile has been updated.';
   } catch {
-    localError.value =
-      userStore.error ?? "Unable to update your profile.";
+    localError.value = userStore.error ?? 'Unable to update your profile.';
   }
 }
 
 async function loadProfile(): Promise<void> {
-  localError.value = "";
+  localError.value = '';
 
   try {
     await userStore.fetchCurrentUser();
     populateForm();
   } catch {
-    localError.value =
-      userStore.error ?? "Unable to load your profile.";
+    localError.value = userStore.error ?? 'Unable to load your profile.';
   }
 }
 
@@ -176,15 +172,11 @@ onMounted(() => {
       class="profile-page__header flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
     >
       <div class="profile-page__heading">
-        <span class="profile-page__eyebrow">
-          Account
-        </span>
+        <span class="profile-page__eyebrow"> Account </span>
 
         <h1>Profile</h1>
 
-        <p>
-          Manage your personal information and account details.
-        </p>
+        <p>Manage your personal information and account details.</p>
       </div>
 
       <button
@@ -203,9 +195,7 @@ onMounted(() => {
           aria-hidden="true"
         >
           <path d="M12 20h9" />
-          <path
-            d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"
-          />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
         </svg>
 
         <span>Edit profile</span>
@@ -213,38 +203,22 @@ onMounted(() => {
     </header>
 
     <!-- Loading -->
-    <div
-      v-if="userStore.loading && !userStore.user"
-      class="profile-loading"
-      aria-live="polite"
-    >
+    <div v-if="userStore.loading && !userStore.user" class="profile-loading" aria-live="polite">
       <div class="profile-loading__spinner" />
       <p>Loading your profile...</p>
     </div>
 
     <!-- Error -->
-    <div
-      v-else-if="!userStore.user"
-      class="profile-error"
-      role="alert"
-    >
-      <div class="profile-error__icon">
-        !
-      </div>
+    <div v-else-if="!userStore.user" class="profile-error" role="alert">
+      <div class="profile-error__icon">!</div>
 
       <div>
         <h2>Unable to load profile</h2>
         <p>
-          {{ localError || "Something went wrong while loading your profile." }}
+          {{ localError || 'Something went wrong while loading your profile.' }}
         </p>
 
-        <button
-          type="button"
-          class="profile-error__retry"
-          @click="loadProfile"
-        >
-          Try again
-        </button>
+        <button type="button" class="profile-error__retry" @click="loadProfile">Try again</button>
       </div>
     </div>
 
@@ -254,10 +228,7 @@ onMounted(() => {
       <section class="profile-card profile-card--main">
         <!-- Profile identity -->
         <div class="profile-identity">
-          <div
-            class="profile-avatar"
-            aria-hidden="true"
-          >
+          <div class="profile-avatar" aria-hidden="true">
             {{ initials }}
           </div>
 
@@ -285,11 +256,7 @@ onMounted(() => {
         <div class="profile-card__divider" />
 
         <!-- Feedback -->
-        <div
-          v-if="successMessage"
-          class="profile-alert profile-alert--success"
-          role="status"
-        >
+        <div v-if="successMessage" class="profile-alert profile-alert--success" role="status">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -305,11 +272,7 @@ onMounted(() => {
           <span>{{ successMessage }}</span>
         </div>
 
-        <div
-          v-if="localError"
-          class="profile-alert profile-alert--error"
-          role="alert"
-        >
+        <div v-if="localError" class="profile-alert profile-alert--error" role="alert">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -332,24 +295,15 @@ onMounted(() => {
           <div class="profile-section__heading">
             <div>
               <h3>Personal information</h3>
-              <p>
-                Update the information associated with your ServiceHub account.
-              </p>
+              <p>Update the information associated with your ServiceHub account.</p>
             </div>
           </div>
 
-          <form
-            class="profile-form"
-            @submit.prevent="saveProfile"
-          >
-            <div
-              class="profile-form__grid grid grid-cols-1 gap-5 md:grid-cols-2"
-            >
+          <form class="profile-form" @submit.prevent="saveProfile">
+            <div class="profile-form__grid grid grid-cols-1 gap-5 md:grid-cols-2">
               <!-- First name -->
               <div class="profile-field">
-                <label for="first-name">
-                  First name
-                </label>
+                <label for="first-name"> First name </label>
 
                 <input
                   id="first-name"
@@ -364,9 +318,7 @@ onMounted(() => {
 
               <!-- Last name -->
               <div class="profile-field">
-                <label for="last-name">
-                  Last name
-                </label>
+                <label for="last-name"> Last name </label>
 
                 <input
                   id="last-name"
@@ -381,9 +333,7 @@ onMounted(() => {
 
               <!-- Email -->
               <div class="profile-field">
-                <label for="email">
-                  Email address
-                </label>
+                <label for="email"> Email address </label>
 
                 <input
                   id="email"
@@ -401,9 +351,7 @@ onMounted(() => {
 
               <!-- Phone -->
               <div class="profile-field">
-                <label for="phone">
-                  Phone number
-                </label>
+                <label for="phone"> Phone number </label>
 
                 <input
                   id="phone"
@@ -437,13 +385,10 @@ onMounted(() => {
                 class="profile-button profile-button--primary"
                 :disabled="userStore.saving || !hasChanges"
               >
-                <span
-                  v-if="userStore.saving"
-                  class="profile-button__spinner"
-                />
+                <span v-if="userStore.saving" class="profile-button__spinner" />
 
                 <span>
-                  {{ userStore.saving ? "Saving..." : "Save changes" }}
+                  {{ userStore.saving ? 'Saving...' : 'Save changes' }}
                 </span>
               </button>
             </div>
@@ -456,27 +401,19 @@ onMounted(() => {
         <div class="profile-section__heading">
           <div>
             <h3>Account information</h3>
-            <p>
-              Details about your ServiceHub account.
-            </p>
+            <p>Details about your ServiceHub account.</p>
           </div>
         </div>
 
         <div class="account-details">
           <div class="account-detail">
-            <span class="account-detail__label">
-              Account ID
-            </span>
+            <span class="account-detail__label"> Account ID </span>
 
-            <span class="account-detail__value">
-              #{{ userStore.user.id }}
-            </span>
+            <span class="account-detail__value"> #{{ userStore.user.id }} </span>
           </div>
 
           <div class="account-detail">
-            <span class="account-detail__label">
-              Role
-            </span>
+            <span class="account-detail__label"> Role </span>
 
             <span class="account-detail__value">
               {{ roleLabel }}
@@ -484,9 +421,7 @@ onMounted(() => {
           </div>
 
           <div class="account-detail">
-            <span class="account-detail__label">
-              Account status
-            </span>
+            <span class="account-detail__label"> Account status </span>
 
             <span class="account-detail__value">
               {{ statusLabel }}
@@ -494,9 +429,7 @@ onMounted(() => {
           </div>
 
           <div class="account-detail">
-            <span class="account-detail__label">
-              Member since
-            </span>
+            <span class="account-detail__label"> Member since </span>
 
             <span class="account-detail__value">
               {{ formatDate(userStore.user.created_at) }}
@@ -504,9 +437,7 @@ onMounted(() => {
           </div>
 
           <div class="account-detail">
-            <span class="account-detail__label">
-              Last updated
-            </span>
+            <span class="account-detail__label"> Last updated </span>
 
             <span class="account-detail__value">
               {{ formatDate(userStore.user.updated_at) }}
@@ -514,9 +445,7 @@ onMounted(() => {
           </div>
 
           <div class="account-detail">
-            <span class="account-detail__label">
-              Last login
-            </span>
+            <span class="account-detail__label"> Last login </span>
 
             <span class="account-detail__value">
               {{ formatDate(userStore.user.last_login_at) }}
@@ -943,30 +872,14 @@ onMounted(() => {
 }
 
 .profile-alert--success {
-  border-color: color-mix(
-    in srgb,
-    var(--color-success) 30%,
-    var(--color-border)
-  );
-  background: color-mix(
-    in srgb,
-    var(--color-success) 8%,
-    var(--color-surface)
-  );
+  border-color: color-mix(in srgb, var(--color-success) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
   color: var(--color-success);
 }
 
 .profile-alert--error {
-  border-color: color-mix(
-    in srgb,
-    var(--color-danger) 30%,
-    var(--color-border)
-  );
-  background: color-mix(
-    in srgb,
-    var(--color-danger) 8%,
-    var(--color-surface)
-  );
+  border-color: color-mix(in srgb, var(--color-danger) 30%, var(--color-border));
+  background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
   color: var(--color-danger);
 }
 

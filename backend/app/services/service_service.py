@@ -59,9 +59,7 @@ class ServiceService:
         provider: ProviderProfile,
         request: ServiceCreateRequest,
     ) -> Service:
-        category = self.category_repository.get_by_id(
-            request.category_id
-        )
+        category = self.category_repository.get_by_id(request.category_id)
 
         if category is None:
             raise ResourceNotFoundError(
@@ -104,9 +102,7 @@ class ServiceService:
         )
 
         if request.category_id is not None:
-            category = self.category_repository.get_by_id(
-                request.category_id
-            )
+            category = self.category_repository.get_by_id(request.category_id)
 
             if category is None:
                 raise ResourceNotFoundError(
@@ -123,9 +119,7 @@ class ServiceService:
         updated_service = self.service_repository.update(
             service,
             category_id=request.category_id,
-            name=request.name.strip()
-            if request.name is not None
-            else None,
+            name=request.name.strip() if request.name is not None else None,
             description=request.description,
             duration_minutes=request.duration_minutes,
             price=request.price,

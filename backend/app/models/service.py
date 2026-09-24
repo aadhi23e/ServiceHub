@@ -25,6 +25,7 @@ if TYPE_CHECKING:
     from app.models.service_category import ServiceCategory
     from app.models.provider import ProviderProfile
 
+
 class Service(Base):
     __tablename__ = "services"
 

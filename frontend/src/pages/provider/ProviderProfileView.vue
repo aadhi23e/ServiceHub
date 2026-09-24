@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
-import { useProviderStore } from "../../stores/provider";
+import { onMounted, reactive, ref } from 'vue';
+import { useProviderStore } from '../../stores/provider';
 
 const providerStore = useProviderStore();
 
-const successMessage = ref("");
+const successMessage = ref('');
 
 const form = reactive({
-  business_name: "",
-  description: "",
-  phone: "",
-  address: "",
-  city: "",
-  timezone: "",
+  business_name: '',
+  description: '',
+  phone: '',
+  address: '',
+  city: '',
+  timezone: '',
 });
 
 function populateForm() {
@@ -20,27 +20,21 @@ function populateForm() {
     return;
   }
 
-  form.business_name =
-    providerStore.provider.business_name;
+  form.business_name = providerStore.provider.business_name;
 
-  form.description =
-    providerStore.provider.description ?? "";
+  form.description = providerStore.provider.description ?? '';
 
-  form.phone =
-    providerStore.provider.phone ?? "";
+  form.phone = providerStore.provider.phone ?? '';
 
-  form.address =
-    providerStore.provider.address ?? "";
+  form.address = providerStore.provider.address ?? '';
 
-  form.city =
-    providerStore.provider.city ?? "";
+  form.city = providerStore.provider.city ?? '';
 
-  form.timezone =
-    providerStore.provider.timezone;
+  form.timezone = providerStore.provider.timezone;
 }
 
 async function saveProfile() {
-  successMessage.value = "";
+  successMessage.value = '';
 
   await providerStore.updateProvider({
     business_name: form.business_name.trim(),
@@ -51,7 +45,7 @@ async function saveProfile() {
     timezone: form.timezone.trim(),
   });
 
-  successMessage.value = "Provider profile updated successfully.";
+  successMessage.value = 'Provider profile updated successfully.';
 }
 
 onMounted(async () => {
@@ -69,36 +63,20 @@ onMounted(async () => {
       <div>
         <p class="page-eyebrow">Provider</p>
         <h1 class="page-title">Business profile</h1>
-        <p class="page-description">
-          Manage the business information customers see on ServiceHub.
-        </p>
+        <p class="page-description">Manage the business information customers see on ServiceHub.</p>
       </div>
     </div>
 
-    <div
-      v-if="providerStore.loading"
-      class="state-card"
-    >
-      Loading provider profile...
-    </div>
+    <div v-if="providerStore.loading" class="state-card">Loading provider profile...</div>
 
-    <div
-      v-else-if="providerStore.error"
-      class="state-card state-card--error"
-    >
+    <div v-else-if="providerStore.error" class="state-card state-card--error">
       {{ providerStore.error }}
     </div>
 
-    <form
-      v-else
-      class="provider-form-card"
-      @submit.prevent="saveProfile"
-    >
+    <form v-else class="provider-form-card" @submit.prevent="saveProfile">
       <div class="form-grid">
         <div class="form-field form-field--full">
-          <label for="business-name">
-            Business name
-          </label>
+          <label for="business-name"> Business name </label>
 
           <input
             id="business-name"
@@ -110,88 +88,47 @@ onMounted(async () => {
         </div>
 
         <div class="form-field form-field--full">
-          <label for="description">
-            Description
-          </label>
+          <label for="description"> Description </label>
 
-          <textarea
-            id="description"
-            v-model="form.description"
-            rows="5"
-            maxlength="5000"
-          />
+          <textarea id="description" v-model="form.description" rows="5" maxlength="5000" />
         </div>
 
         <div class="form-field">
           <label for="phone">Phone</label>
 
-          <input
-            id="phone"
-            v-model="form.phone"
-            type="tel"
-            maxlength="30"
-          />
+          <input id="phone" v-model="form.phone" type="tel" maxlength="30" />
         </div>
 
         <div class="form-field">
           <label for="city">City</label>
 
-          <input
-            id="city"
-            v-model="form.city"
-            type="text"
-            maxlength="100"
-          />
+          <input id="city" v-model="form.city" type="text" maxlength="100" />
         </div>
 
         <div class="form-field form-field--full">
           <label for="address">Address</label>
 
-          <textarea
-            id="address"
-            v-model="form.address"
-            rows="3"
-            maxlength="500"
-          />
+          <textarea id="address" v-model="form.address" rows="3" maxlength="500" />
         </div>
 
         <div class="form-field">
           <label for="timezone">Timezone</label>
 
-          <input
-            id="timezone"
-            v-model="form.timezone"
-            type="text"
-            maxlength="100"
-          />
+          <input id="timezone" v-model="form.timezone" type="text" maxlength="100" />
         </div>
       </div>
 
-      <div
-        v-if="successMessage"
-        class="form-success"
-      >
+      <div v-if="successMessage" class="form-success">
         {{ successMessage }}
       </div>
 
-      <div
-        v-if="providerStore.error"
-        class="form-error"
-      >
+      <div v-if="providerStore.error" class="form-error">
         {{ providerStore.error }}
       </div>
 
       <div class="form-actions">
-        <button
-          class="primary-button"
-          type="submit"
-          :disabled="providerStore.updating"
-        >
-          {{
-            providerStore.updating
-              ? "Saving..."
-              : "Save changes"
-          }}
+        <button class="primary-button" type="submit" :disabled="providerStore.updating">
+          {{ providerStore.updating ? 'Saving...' : 'Save changes' }}
         </button>
       </div>
     </form>

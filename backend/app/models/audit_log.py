@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
     from app.models.user import User
 
+
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 

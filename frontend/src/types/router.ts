@@ -1,7 +1,4 @@
-export type UserRole =
-  | "CUSTOMER"
-  | "PROVIDER"
-  | "ADMIN";
+export type UserRole = 'CUSTOMER' | 'PROVIDER' | 'ADMIN';
 
 export interface RouteMeta {
   requiresAuth?: boolean;

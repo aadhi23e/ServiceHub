@@ -81,13 +81,7 @@ class UserRepository:
         offset: int = 0,
         limit: int = 50,
     ) -> list[User]:
-        return (
-            self.db.query(User)
-            .order_by(User.id)
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
+        return self.db.query(User).order_by(User.id).offset(offset).limit(limit).all()
 
     def suspend(self, user: User) -> User:
         user.status = UserStatus.SUSPENDED.value

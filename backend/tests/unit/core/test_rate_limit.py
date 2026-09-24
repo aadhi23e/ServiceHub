@@ -16,9 +16,7 @@ def test_build_rate_limit_key():
         policy="general",
     )
 
-    assert key == (
-        "servicehub:rate_limit:ip:203.0.113.10:general"
-    )
+    assert key == ("servicehub:rate_limit:ip:203.0.113.10:general")
 
 
 def test_rate_limiter_allows_request_under_limit():
@@ -53,8 +51,7 @@ def test_rate_limiter_rejects_request_over_limit():
         key="servicehub:rate_limit:ip:203.0.113.10:general",
         limit=100,
         window_seconds=60,
-policy="general",
-
+        policy="general",
     )
 
     assert result.allowed is False
@@ -73,8 +70,7 @@ def test_rate_limiter_allows_last_request():
         key="servicehub:rate_limit:ip:203.0.113.10:general",
         limit=100,
         window_seconds=60,
-policy="general",
-
+        policy="general",
     )
 
     assert result.allowed is True
@@ -92,8 +88,7 @@ def test_rate_limiter_never_returns_negative_remaining():
         key="servicehub:rate_limit:ip:203.0.113.10:general",
         limit=100,
         window_seconds=60,
-policy="general",
-
+        policy="general",
     )
 
     assert result.allowed is False
@@ -110,8 +105,7 @@ def test_rate_limiter_clamps_invalid_ttl():
         key="servicehub:rate_limit:ip:203.0.113.10:general",
         limit=100,
         window_seconds=60,
-policy="general",
-
+        policy="general",
     )
 
     assert result.retry_after == 1
@@ -119,9 +113,7 @@ policy="general",
 
 def test_rate_limiter_fails_open_when_redis_fails():
     redis_client = Mock()
-    redis_client.eval.side_effect = redis.RedisError(
-        "Redis unavailable"
-    )
+    redis_client.eval.side_effect = redis.RedisError("Redis unavailable")
 
     limiter = RateLimiter(redis_client)
 
@@ -149,8 +141,7 @@ def test_rate_limiter_rejects_invalid_limit():
             key="servicehub:rate_limit:ip:203.0.113.10:general",
             limit=0,
             window_seconds=60,
-policy="general",
-
+            policy="general",
         )
 
     redis_client.eval.assert_not_called()
@@ -174,6 +165,7 @@ def test_rate_limiter_rejects_invalid_window():
 
     redis_client.eval.assert_not_called()
 
+
 def test_rate_limiter_enforce_allows_request():
     redis_client = Mock()
     redis_client.eval.return_value = [1, 60]
@@ -184,8 +176,7 @@ def test_rate_limiter_enforce_allows_request():
         key="servicehub:rate_limit:ip:203.0.113.10:general",
         limit=100,
         window_seconds=60,
-policy="general",
-
+        policy="general",
     )
 
     assert result.allowed is True
@@ -203,13 +194,13 @@ def test_rate_limiter_enforce_raises_rate_limit_error():
             key="servicehub:rate_limit:ip:203.0.113.10:general",
             limit=100,
             window_seconds=60,
-policy="general",
-
+            policy="general",
         )
 
     assert exc_info.value.status_code == 429
     assert exc_info.value.code == "RATE_LIMITED"
     assert exc_info.value.retry_after == 37
+
 
 def test_rate_limiter_rejects_empty_policy():
     redis_client = Mock()
@@ -228,6 +219,7 @@ def test_rate_limiter_rejects_empty_policy():
         )
 
     redis_client.eval.assert_not_called()
+
 
 def test_rate_limiter_enforce_preserves_rate_limit_metadata():
     redis_client = Mock()
