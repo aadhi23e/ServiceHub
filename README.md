@@ -1,824 +1,926 @@
 # ServiceHub
 
-ServiceHub is a full-stack local service booking and management platform that connects customers with service providers and gives providers and administrators the tools to manage bookings, services, availability, users, and platform operations.
+**ServiceHub** is a full-stack service booking and management platform that connects customers with verified service providers and their service agents.
 
-The project is designed as a realistic production-oriented application, covering the complete lifecycle of a modern web application from development and testing to deployment, monitoring, debugging, and continuous improvement.
+The platform is designed around real-world service operations such as **home services, shop-based services, scheduled appointments, provider teams, agent assignment, availability, service areas, bookings, payments, notifications, and administrative oversight**.
 
----
-
-## What is ServiceHub?
-
-ServiceHub is built around a simple workflow:
-
-```text
-Customer
-   ↓
-Discover a Service
-   ↓
-Choose a Provider
-   ↓
-View Available Time
-   ↓
-Create Booking
-   ↓
-Provider Accepts
-   ↓
-Service Takes Place
-   ↓
-Booking Completed
-   ↓
-Customer Leaves Review
-```
-
-At the same time, providers can manage their services, availability, and bookings, while administrators can manage the overall platform.
+ServiceHub is being developed as a realistic production-oriented application, with a focus on maintainability, security, observability, data integrity, and practical scalability.
 
 ---
 
-## What is it for?
+## Features
 
-ServiceHub is intended to solve the common problem of finding and booking local services through a single platform.
-
-Examples of services that could eventually be offered include:
-
-* Home cleaning
-* Plumbing
-* Electrical services
-* Beauty services
-* Appliance repair
-* Personal services
-* Tutoring
-* Photography
-* Other appointment-based local services
-
-The initial system focuses on the core booking and management workflow rather than trying to implement every possible marketplace feature.
-
----
-
-# Features
-
-## Customer
+### Customer
 
 Customers can:
 
-* Register and log in
-* Manage their profile
-* Browse service categories
-* Browse service providers
-* View provider profiles
-* View provider services
-* View service availability
-* Find available booking times
-* Create bookings
-* View upcoming and previous bookings
-* View booking details
-* Cancel eligible bookings
-* Receive in-app notifications
-* Review completed services
-* View provider reviews
+* Create an account and authenticate securely.
+* Manage their profile and contact information.
+* Browse service categories.
+* Search and discover available services.
+* View service and provider information.
+* Check whether a service is available at their location.
+* Select a service delivery method:
 
----
+  * Home service
+  * At-provider/shop service
+* Provide the information required for the requested service.
+* View available appointment slots.
+* Create and manage bookings.
+* Track booking status.
+* Receive booking and service notifications.
+* View payment and invoice information.
+* Confirm service completion.
+* Report service issues or disputes.
+* Request cancellation or rescheduling where applicable.
+* Submit reviews after eligible completed services.
 
-## Provider
+### Service Providers
 
 Providers can:
 
-* Register and log in
-* Create and manage their provider profile
-* Create services
-* Edit services
-* Activate/deactivate services
-* Configure recurring availability
-* Edit availability
-* View incoming bookings
-* Accept bookings
-* Reject bookings
-* Start bookings
-* Complete bookings
-* View relevant customer information
-* Receive notifications
-* View reviews
+* Register as a service provider.
+* Manage their business/service location.
+* Create and manage services.
+* Define service categories and pricing.
+* Define supported service types.
+* Configure service areas.
+* Manage operating hours.
+* Add and manage service agents.
+* Assign agents to bookings.
+* Manage agent schedules and availability.
+* View and manage customer bookings.
+* Handle cancellations and rescheduling.
+* Reassign bookings when an agent becomes unavailable.
+* Track active service operations.
+* Manage service completion.
+* Monitor payments and provider earnings.
+* View invoices and transaction records.
+* Manage provider-side notifications.
+
+### Service Agents
+
+Service agents can:
+
+* Access their own account and dashboard.
+* View assigned bookings.
+* View their schedule and availability.
+* Accept or acknowledge assigned work.
+* Start travel for a home-service booking.
+* Mark themselves as en route.
+* Confirm arrival at the customer location.
+* Start the service.
+* Complete the service.
+* Record relevant service notes.
+* Report problems during a service.
+* Report unavailable tools, materials, or additional requirements.
+* View their completed work and service history.
+
+### Administrators
+
+Administrators provide platform-level oversight.
+
+They can:
+
+* Manage customers.
+* Manage providers.
+* Review and approve provider verification.
+* Manage provider service operations.
+* Manage provider agents where appropriate.
+* Manage service categories.
+* Review services and provider information.
+* Monitor bookings.
+* Monitor platform activity.
+* Manage suspicious or abusive accounts.
+* Suspend or reactivate users/providers.
+* Review audit logs.
+* Monitor payments and transactions.
+* Monitor platform commissions.
+* Review disputes and reported problems.
+* Monitor application health and operational status.
+* Review platform statistics and reports.
+* Manage platform configuration where authorized.
 
 ---
 
-## Admin
+## Core Service Workflow
 
-Administrators can:
+ServiceHub separates the **customer, provider organization, and service agent** concepts.
 
-* Log in to the administration area
-* View platform statistics
-* View users
-* View user details
-* Suspend users
-* Activate users
-* View providers
-* View bookings
-* Manage service categories
-* View audit logs
+A typical service flow is:
+
+```text
+Customer
+   │
+   ├── Login
+   │
+   ├── Browse/Search
+   │
+   ├── Select Category
+   │
+   ├── Select Provider / Service
+   │
+   ├── Select Service Mode
+   │      ├── HOME_SERVICE
+   │      └── AT_PROVIDER
+   │
+   ├── Provide Service Details
+   │
+   ├── Provide / Select Location
+   │
+   ├── Check Availability
+   │
+   ├── Select Appointment
+   │
+   ├── Create Booking
+   │
+   └── Payment
+          │
+          ▼
+      Booking
+          │
+          ▼
+   Provider Assignment
+          │
+          ▼
+      Service Agent
+          │
+          ├── ASSIGNED
+          ├── EN_ROUTE
+          ├── ARRIVED
+          ├── IN_PROGRESS
+          └── COMPLETED
+          │
+          ▼
+   Completion / Invoice
+          │
+          ▼
+   Customer Confirmation / Issue
+```
+
+The exact booking, payment, cancellation, rescheduling, dispute, and reassignment rules are implemented as explicit domain workflows rather than relying on a generic status update.
 
 ---
 
-# Booking System
+## Provider Organization Model
 
-Booking is one of the core business systems in ServiceHub.
+A provider does not necessarily represent one individual worker.
 
-A booking moves through defined states:
+A provider may represent:
+
+* An individual professional.
+* A shop.
+* A company.
+* A local service business.
+* A team of service agents.
+
+For example:
+
+```text
+Service Provider
+│
+├── Business / Shop
+│
+├── Services
+│
+├── Service Areas
+│
+├── Operating Hours
+│
+└── Service Agents
+      ├── Agent A
+      ├── Agent B
+      ├── Agent C
+      └── ...
+```
+
+This allows a business to have multiple agents working simultaneously.
+
+For example, a repair shop could have:
+
+```text
+Shop
+│
+├── Agent A → Shop appointments
+├── Agent B → Home services
+├── Agent C → Shop appointments
+└── Agent D → Home services
+```
+
+Agents can have individual schedules and availability while the provider maintains the overall business configuration.
+
+---
+
+## Service Modes
+
+ServiceHub supports different ways a service can be delivered.
+
+### Home Service
+
+The service agent travels to the customer's location.
+
+```text
+Provider / Agent
+       │
+       ▼
+Customer Location
+```
+
+The platform can use the customer's location and the provider's service area to determine whether the service can be offered.
+
+### At Provider
+
+The customer travels to the provider's location.
+
+```text
+Customer
+    │
+    ▼
+Provider / Shop
+```
+
+The provider's operating hours and agent availability determine appointment availability.
+
+---
+
+## Booking and Assignment
+
+Booking availability is not based only on a provider's general opening hours.
+
+ServiceHub considers multiple constraints, including:
+
+* Provider operating hours.
+* Service duration.
+* Agent availability.
+* Existing bookings.
+* Service mode.
+* Service area.
+* Customer location.
+* Travel requirements for home services.
+* Required preparation or service information.
+* Agent assignment.
+* Reassignment when an agent becomes unavailable.
+
+The platform is designed so that the booking system can evolve from simple scheduling into a more realistic resource and workforce scheduling system.
+
+---
+
+## Booking Lifecycle
+
+A booking can move through controlled domain states.
+
+For example:
 
 ```text
 PENDING
+   │
    ├── CONFIRMED
-   ├── REJECTED
-   └── CANCELLED
-
-CONFIRMED
-   ├── CANCELLED
-   └── IN_PROGRESS
-
-IN_PROGRESS
-   └── COMPLETED
+   │      │
+   │      ├── ASSIGNED
+   │      │      │
+   │      │      ├── EN_ROUTE
+   │      │      │      │
+   │      │      │      ├── ARRIVED
+   │      │      │      │      │
+   │      │      │      │      └── IN_PROGRESS
+   │      │      │      │              │
+   │      │      │      │              └── COMPLETED
+   │      │      │      │
+   │      │      │      └── ...
+   │      │      │
+   │      │      └── REASSIGNED
+   │      │
+   │      └── CANCELLED
+   │
+   └── REJECTED
 ```
 
-The system prevents invalid state transitions.
+Only valid state transitions are allowed.
 
-It also protects against two customers booking overlapping time for the same provider.
+The system will also support operational situations such as:
 
-PostgreSQL is used as the source of truth for booking consistency, including database-level protection against overlapping active bookings.
-
-Adjacent bookings are allowed:
-
-```text
-10:00 ───────── 11:00
-11:00 ───────── 12:00
-```
-
-Overlapping bookings for the same provider are rejected.
+* Agent absence.
+* Agent sickness.
+* Late arrival.
+* Customer unavailable.
+* Service requiring additional equipment.
+* Service requiring additional information.
+* Customer dissatisfaction.
+* Cancellation.
+* Rescheduling.
+* Agent reassignment.
+* Service disputes.
 
 ---
 
-# Technology Stack
+## Payments
 
-## Frontend
+V1 includes a **dummy payment system** for development and testing.
 
-* Vue 3
+The payment architecture is designed around a future real payment provider integration.
+
+The system is intended to support:
+
+* Payment records.
+* Payment status.
+* Transaction records.
+* Invoices.
+* Refund workflows.
+* Provider earnings.
+* Platform commission.
+* Payment reconciliation.
+* Online and offline payment workflows.
+
+For offline payments, the provider-side workflow can record and reconcile payment collection rather than assuming that a successful booking automatically means successful payment.
+
+---
+
+## Provider Verification
+
+Provider registration and provider verification are separate concepts.
+
+A provider can register with the platform, but provider services intended for customers can require administrative verification.
+
+```text
+User
+  │
+  ▼
+Provider Registration
+  │
+  ▼
+Provider Profile
+  │
+  ▼
+Verification
+  │
+  ▼
+Admin Review
+  │
+  ├── Approved
+  ├── Rejected
+  └── Requires Changes
+```
+
+This provides a foundation for controlling which providers and services are allowed to operate on the platform.
+
+---
+
+## Technology Stack
+
+### Backend
+
+* Python
+* FastAPI
+* Uvicorn
+* SQLAlchemy
+* Alembic
+* PostgreSQL
+* Redis
+* Celery
+* Pydantic
+* Argon2 password hashing
+* JWT-based authentication
+
+### Frontend
+
 * TypeScript
+* Vue
 * Vite
 * Pinia
 * Vue Router
 * Tailwind CSS
+* Custom scoped CSS
+* ESLint
+* Prettier
 
-## Backend
-
-* Python
-* FastAPI
-* Pydantic
-* SQLAlchemy 2.x
-* Alembic
-* Uvicorn
-
-## Database
-
-* PostgreSQL
-
-## Caching / Background Processing
-
-* Redis
-* Celery
-
-## Infrastructure
+### Infrastructure
 
 * Docker
 * Docker Compose
 * GitHub Actions
+* PostgreSQL
+* Redis
 
-## Testing
+### Development
 
-### Backend
-
-* pytest
-* HTTPX
-
-### Frontend
-
-* Vitest
-* Vue Test Utils
+* Git
+* Conventional Commits
+* Black
+* Ruff
+* ESLint
+* Prettier
+* Automated tests
 
 ---
 
-# Architecture
+## Architecture
 
-ServiceHub uses a modular monolith architecture.
-
-The initial system intentionally avoids unnecessary microservices and distributed infrastructure.
+ServiceHub uses a modular monolithic architecture.
 
 ```text
-                    ┌─────────────────┐
-                    │     Browser     │
-                    └────────┬────────┘
-                             │
-                             ▼
-                    ┌─────────────────┐
-                    │    Vue 3 App    │
-                    │ TypeScript/Vite │
-                    └────────┬────────┘
-                             │ HTTP
-                             ▼
-                    ┌─────────────────┐
-                    │     FastAPI     │
-                    │ Modular Backend │
-                    └────────┬────────┘
-                             │
-             ┌───────────────┼────────────────┐
-             │               │                │
-             ▼               ▼                ▼
-       ┌───────────┐   ┌───────────┐   ┌───────────┐
-       │PostgreSQL │   │   Redis   │   │  Celery   │
-       │   Source  │   │  Broker / │   │ Background│
-       │ of Truth  │   │ Rate Limit│   │   Jobs    │
-       └───────────┘   └───────────┘   └───────────┘
+                         ┌─────────────────────┐
+                         │      Vue Frontend    │
+                         │ TypeScript + Pinia   │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │     FastAPI API      │
+                         │ Authentication/RBAC  │
+                         └──────────┬──────────┘
+                                    │
+                     ┌──────────────┼──────────────┐
+                     │              │              │
+                     ▼              ▼              ▼
+                Services      Repositories      Domain
+                     │              │              │
+                     └──────────────┼──────────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │     PostgreSQL      │
+                         └─────────────────────┘
+
+                         ┌─────────────────────┐
+                         │       Redis         │
+                         │ Cache / Rate Limit  │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │       Celery        │
+                         │ Background Jobs     │
+                         └─────────────────────┘
 ```
 
-The architecture is designed so that individual application components can scale independently when required without introducing unnecessary distributed-system complexity at the beginning.
+The architecture intentionally avoids premature microservices and distributed infrastructure.
+
+The goal is to keep V1 maintainable while maintaining clear boundaries that allow future extraction or scaling when required.
 
 ---
 
-# Topics Covered
-
-ServiceHub is also a practical software engineering project covering a broad range of topics.
-
-## Backend Development
-
-* REST API development
-* FastAPI
-* Pydantic validation
-* SQLAlchemy
-* Service-layer architecture
-* Dependency injection
-* Error handling
-* API design
-* Pagination
-* Filtering
-* Business logic
-
-## Database Engineering
-
-* PostgreSQL
-* Relational database design
-* Primary keys
-* Foreign keys
-* Constraints
-* Indexes
-* Transactions
-* Database migrations
-* Alembic
-* Data integrity
-* Concurrency control
-* PostgreSQL exclusion constraints
-
-## Authentication & Security
-
-* Password hashing
-* Authentication
-* Authorization
-* Role-based access control
-* JWT/session management
-* Ownership checks
-* IDOR prevention
-* Rate limiting
-* Secure API design
-* Sensitive data protection
-* Audit logging
-
-## Frontend Development
-
-* Vue 3
-* TypeScript
-* Component architecture
-* State management
-* Routing
-* Forms
-* API integration
-* Loading states
-* Error states
-* Empty states
-* Authentication flows
-* Role-based UI
-
-## Background Processing
-
-* Redis
-* Celery
-* Asynchronous jobs
-* Notifications
-* Scheduled tasks
-* Retry handling
-
-## DevOps & Infrastructure
-
-* Docker
-* Docker Compose
-* Environment configuration
-* Production configuration
-* Database deployment
-* Redis deployment
-* CI/CD
-* GitHub Actions
-* Health checks
-* Backups
-
-## Testing
-
-* Unit testing
-* Integration testing
-* API testing
-* Frontend testing
-* Authentication testing
-* Authorization testing
-* Database testing
-* Concurrency testing
-* Edge-case testing
-
-## Production Engineering
-
-* Structured logging
-* Request IDs
-* Error tracking
-* Health checks
-* Observability
-* Performance investigation
-* Debugging production issues
-* Security improvements
-* Database migrations
-* Release management
-* Incident investigation
-
----
-
-# Project Structure
-
-The repository is organized around the frontend, backend, infrastructure, migrations, documentation, and project configuration.
+## Repository Structure
 
 ```text
 ServiceHub/
 │
-├── .github/
-│   ├── workflows/
-│   ├── ISSUE_TEMPLATE/
-│   └── pull_request_template.md
-│
 ├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── dependencies/
+│   │   ├── enums/
+│   │   ├── models/
+│   │   ├── repositories/
+│   │   ├── schemas/
+│   │   └── services/
+│   │
+│   ├── alembic/
+│   ├── tests/
+│   ├── Dockerfile
+│   └── requirements/
 │
 ├── frontend/
-│
-├── migrations/
-│
-├── docker/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── router/
+│   │   ├── stores/
+│   │   ├── types/
+│   │   └── views/
+│   ├── public/
+│   ├── Dockerfile
+│   └── package.json
 │
 ├── docs/
-│
+├── .github/
+├── docker-compose.local.yml
+├── .env.example
+├── Makefile
 ├── CHANGELOG.md
 ├── CONTRIBUTING.md
-├── README.md
-├── docker-compose.yml
-└── .gitignore
+└── README.md
 ```
-
-Directories and modules will be introduced as the corresponding functionality is implemented.
 
 ---
 
-# Local Development
-Local Service Booking & Management Platform.
+## Requirements
 
-Stack
------
-
-Frontend:
-- Vue
-- TypeScript
-- Vite
-
-Backend:
-- Python
-- FastAPI
-- SQLAlchemy
-- Alembic
-
-Infrastructure:
-- PostgreSQL
-- Redis
-- Celery
-- Docker Compose
-
-Development
------------
-
-Start the local stack:
-
-docker compose -f docker-compose.local.yml up -d --build
-
-Frontend:
-http://localhost:5173
-
-Backend:
-http://localhost:8000
-
-API documentation:
-http://localhost:8000/docs
-
-Health:
-http://localhost:8000/health/live
-
-## Prerequisites
-
-Install the following before starting local development:
+Before running ServiceHub locally, install:
 
 * Git
-* Docker
+* Docker Desktop
 * Docker Compose
-* Python
-* Node.js
-* npm
+* Python 3.x for local backend development
+* Node.js and npm for local frontend development
 
-Verify the installations:
-
-```bash
-git --version
-docker --version
-docker compose version
-python --version
-node --version
-npm --version
-```
+Docker is the recommended way to run the complete local development environment.
 
 ---
 
-# Clone the Repository
+## Configuration
+
+Copy the example environment file:
 
 ```bash
-git clone <repository-url>
-cd ServiceHub
+cp .env.example .env
 ```
 
----
-
-# Environment Configuration
-
-Create the appropriate environment files for local development.
-
-Example configuration categories include:
-
-```text
-DATABASE_URL
-REDIS_URL
-SECRET_KEY
-JWT configuration
-Application environment
-CORS configuration
-```
-
-Never commit real credentials, API keys, passwords, or production secrets to Git.
-
-A local environment file should remain untracked.
-
----
-
-# Start Infrastructure
-
-ServiceHub uses Docker Compose for local infrastructure.
-
-Start the required services:
-
-```bash
-docker compose up -d
-```
-
-Check running containers:
-
-```bash
-docker compose ps
-```
-
-View logs:
-
-```bash
-docker compose logs
-```
-
-Follow logs for a specific service:
-
-```bash
-docker compose logs -f postgres
-```
-
-```bash
-docker compose logs -f redis
-```
-
----
-
-# Database Migrations
-
-Database schema changes are managed through Alembic.
-
-Run migrations:
-
-```bash
-alembic upgrade head
-```
-
-Check migration status:
-
-```bash
-alembic current
-```
-
-Create a migration after a deliberate schema change:
-
-```bash
-alembic revision --autogenerate -m "describe the schema change"
-```
-
-Generated migrations must always be reviewed before being applied.
-
----
-
-# Start the Backend
-
-Create and activate a Python virtual environment when running the backend directly:
-
-### Windows
+On Windows PowerShell:
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\activate
+Copy-Item .env.example .env
 ```
 
-### Linux/macOS
+Update the environment variables for your local environment.
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-Install backend dependencies:
-
-```bash
-pip install -r backend/requirements.txt
-```
-
-Start the development server:
-
-```bash
-uvicorn backend.app.main:app --reload
-```
-
-The exact command may evolve with the backend package structure.
+Do not commit `.env` files or production secrets.
 
 ---
 
-# Start the Frontend
+## Running Locally
 
-Install frontend dependencies:
-
-```bash
-cd frontend
-npm install
-```
-
-Start the development server:
+Build and start the development stack:
 
 ```bash
-npm run dev
+docker compose -f docker-compose.local.yml up --build
 ```
 
-The frontend will provide the browser-based ServiceHub interface.
-
----
-
-# Start Background Workers
-
-Celery is used for background tasks such as notifications and scheduled processing.
-
-A worker can be started with:
+Run in detached mode:
 
 ```bash
-celery -A <celery_application> worker --loglevel=info
-```
-
-The exact application path will be documented once the worker module is implemented.
-
----
-
-# Local Deployment with Docker Compose
-
-The target local environment is designed to run the application using Docker Compose.
-
-Conceptually:
-
-```text
-Docker Compose
-│
-├── Frontend
-├── Backend
-├── PostgreSQL
-├── Redis
-└── Celery Worker
-```
-
-Start the complete environment:
-
-```bash
-docker compose up --build
+docker compose -f docker-compose.local.yml up -d --build
 ```
 
 Stop the environment:
 
 ```bash
-docker compose down
+docker compose -f docker-compose.local.yml down
 ```
 
-Stop and remove the local database volume only when intentionally resetting local data:
+View logs:
 
 ```bash
-docker compose down -v
+docker compose -f docker-compose.local.yml logs -f
 ```
+
+Run database migrations:
+
+```bash
+docker compose -f docker-compose.local.yml exec backend alembic upgrade head
+```
+
+The exact service names may vary with the current Docker Compose configuration.
 
 ---
 
-# Health Checks
+## API Documentation
 
-The backend will expose health endpoints for operational checks.
+When the backend is running, FastAPI provides interactive API documentation.
 
-Typical endpoints include:
+Development documentation:
 
 ```text
-/health
-/health/ready
+http://127.0.0.1:8000/docs
 ```
 
-These endpoints are intended to distinguish between:
+Alternative OpenAPI documentation:
 
-* application process health
-* dependency/readiness health
-
-The exact endpoint behavior will be documented with the implemented API.
+```text
+http://127.0.0.1:8000/redoc
+```
 
 ---
 
-# Testing
+## API Versioning
 
-Run backend tests with:
+ServiceHub APIs are versioned.
+
+Current V1 API prefix:
+
+```text
+/api/v1
+```
+
+Example:
+
+```text
+GET /api/v1/users/me
+```
+
+API versioning allows future API changes without immediately breaking existing clients.
+
+---
+
+## Authentication and Authorization
+
+ServiceHub uses authenticated accounts with role-based authorization.
+
+Current platform roles include:
+
+```text
+CUSTOMER
+PROVIDER
+ADMIN
+```
+
+The application separates authentication from authorization.
+
+Authentication determines:
+
+> Who is the user?
+
+Authorization determines:
+
+> What is the user allowed to do?
+
+Provider organizations and service agents are modeled separately so that a provider can operate as a business with multiple workers.
+
+---
+
+## Database
+
+PostgreSQL is the primary relational database.
+
+Database migrations are managed using Alembic.
+
+Important application data includes:
+
+* Users
+* Provider profiles
+* Service categories
+* Services
+* Provider agents
+* Agent availability
+* Provider operating hours
+* Service areas
+* Bookings
+* Booking assignments
+* Notifications
+* Payments
+* Transactions
+* Invoices
+* Reviews
+* Audit logs
+
+Database constraints and transactions are used to protect data integrity and prevent invalid application states.
+
+---
+
+## Testing
+
+Backend tests can be run using the project's configured test command.
+
+Example:
 
 ```bash
 pytest
 ```
 
-Run frontend tests with:
+Frontend checks include:
 
 ```bash
-npm test
+npm run lint
+npm run format:check
 ```
 
-Frontend linting/build commands will be available through the project's `package.json` scripts.
-
-Before submitting a change, run the relevant tests and checks locally.
+Where configured, CI runs automated validation before changes are merged.
 
 ---
 
-# Development Workflow
+## Code Quality
 
-ServiceHub follows a structured Git workflow.
+### Python
+
+Python code follows:
+
+* Black formatting
+* Ruff linting
+* Type hints
+* PEP 8 conventions
+* Clear module boundaries
+
+Example:
+
+```bash
+black backend/
+ruff check backend/
+```
+
+### TypeScript / Vue
+
+Frontend code follows:
+
+* ESLint
+* Prettier
+* TypeScript
+* Vue conventions
+* Explicit API types
+* Reusable Pinia stores
+* Component-level scoped styling where appropriate
+
+Example:
+
+```bash
+npm run lint
+npm run format
+```
+
+---
+
+## Git Workflow
+
+ServiceHub follows a feature-based Git workflow.
+
+Typical development flow:
 
 ```text
-Issue
-  ↓
-Feature/Fix Branch
-  ↓
-Implementation
-  ↓
-Tests
-  ↓
-Pull Request
-  ↓
-CI
-  ↓
-Review
-  ↓
-develop
-  ↓
-Release
-  ↓
-main
+feature branch
+     │
+     ▼
+implementation
+     │
+     ▼
+tests
+     │
+     ▼
+pull request
+     │
+     ▼
+review
+     │
+     ▼
+merge
 ```
 
-Branch names and commit messages follow the project's contribution guidelines.
-
-See:
-
-[`CONTRIBUTING.md`](CONTRIBUTING.md)
-
-for the complete development workflow.
-
----
-
-# CI/CD
-
-GitHub Actions is used for automated project checks.
-
-The CI pipeline is intended to validate:
-
-* backend tests
-* frontend tests
-* linting
-* type checking
-* application builds
-* database migrations where applicable
-* Docker builds where applicable
-
-The production deployment pipeline will be added as the deployment environment is established.
-
----
-
-# Production Deployment
-
-The application is designed to be deployable using containerized services.
-
-A production deployment can eventually be structured around:
+Branches should use descriptive names such as:
 
 ```text
-                    Internet
-                       │
-                       ▼
-                  Frontend/CDN
-                       │
-                       ▼
-                 Reverse Proxy
-                       │
-                       ▼
-              FastAPI Application
-                  │          │
-                  │          └──────────────┐
-                  ▼                         ▼
-             PostgreSQL                  Redis
-                  │                         │
-                  │                         ▼
-                  │                    Celery Workers
-                  │
-                  ▼
-               Backups
+feature/provider-agent-management
+feature/booking-assignment
+fix/service-availability
+refactor/booking-domain
 ```
 
-The exact production infrastructure will depend on the deployment environment.
-
-Production deployment documentation will be maintained separately in `docs/` as the infrastructure is implemented.
-
 ---
 
-# Data & Security
+## Commit Convention
 
-ServiceHub treats PostgreSQL as the source of truth for application data.
+ServiceHub uses Conventional Commits.
 
-Important security principles include:
-
-* passwords are never stored in plaintext
-* authentication is required for protected operations
-* authorization is enforced on the server
-* users can only access resources they are authorized to access
-* administrative operations require administrator privileges
-* production secrets are stored outside source control
-* audit-sensitive operations are logged
-* rate limiting is applied where appropriate
-* database constraints enforce important data integrity rules
-
----
-
-# Documentation
-
-Project documentation will be expanded as the application grows.
-
-Planned documentation includes:
+Examples:
 
 ```text
-docs/
-├── architecture/
-├── api/
-├── database/
-├── deployment/
-├── operations/
-└── security/
+feat: add provider agent management
+feat: add booking assignment workflow
+fix: prevent invalid booking transitions
+refactor: separate provider and agent scheduling
+test: add booking service tests
+docs: update provider workflow
+chore: update dependencies
 ```
-
-The README provides the project overview.
-
-Detailed development and contribution rules are documented in:
-
-[`CONTRIBUTING.md`](CONTRIBUTING.md)
-
-Release history is maintained in:
-
-[`CHANGELOG.md`](CHANGELOG.md)
 
 ---
 
-# License
+## Versioning
 
-License information will be added before public release.
+ServiceHub follows Semantic Versioning:
+
+```text
+MAJOR.MINOR.PATCH
+```
+
+Current development milestone:
+
+```text
+V1.0.0
+```
+
+The previous architecture was developed as:
+
+```text
+V0.0.1
+```
+
+V1.0.0 represents a significant redesign around the real-world service marketplace workflow, including provider organizations, service agents, availability, service locations, booking assignment, verification, payments, and operational workflows.
+
+Future releases may include:
+
+```text
+V1.x.x
+```
+
+for backward-compatible features and fixes, and:
+
+```text
+V2.0.0
+```
+
+for larger architectural or API-breaking changes.
+
+---
+
+## Development Principles
+
+ServiceHub follows these principles:
+
+1. **Build for real users.**
+2. **Keep the architecture understandable.**
+3. **Avoid premature enterprise complexity.**
+4. **Protect data integrity at the database level.**
+5. **Keep business rules inside appropriate service/domain boundaries.**
+6. **Use explicit workflows instead of generic state mutations.**
+7. **Design for multiple providers and multiple service agents.**
+8. **Treat scheduling and availability as first-class domain concepts.**
+9. **Keep payment and booking state separate.**
+10. **Make operational failures recoverable.**
+11. **Keep authentication and authorization separate.**
+12. **Build V1 so it can evolve without requiring a complete rewrite.**
+
+---
+
+## Current Development Scope
+
+V1.0.0 is being developed incrementally.
+
+The major domain areas are:
+
+```text
+Authentication
+      ↓
+Users
+      ↓
+Providers
+      ↓
+Provider Organizations
+      ↓
+Service Agents
+      ↓
+Services
+      ↓
+Service Areas
+      ↓
+Availability
+      ↓
+Bookings
+      ↓
+Assignment
+      ↓
+Service Execution
+      ↓
+Payments
+      ↓
+Invoices
+      ↓
+Reviews / Disputes
+      ↓
+Notifications
+      ↓
+Administration / Audit
+```
+
+The implementation will be developed and tested domain-by-domain rather than introducing the entire system simultaneously.
+
+---
+
+## Contributing
+
+Contributions should follow the project's coding standards and Git workflow.
+
+Before submitting a pull request:
+
+1. Create a feature or fix branch.
+2. Make focused changes.
+3. Add or update tests where appropriate.
+4. Run formatting and linting.
+5. Verify database migrations.
+6. Verify the affected API workflows.
+7. Update documentation when behavior changes.
+8. Use a Conventional Commit message.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the project's detailed contribution guidelines.
+
+---
+
+## License
+
+ServiceHub is currently under development.
+
+The repository license should be defined before public distribution or production release.
+
+If a license has been selected, it should be added as a `LICENSE` file in the repository root and referenced here.
+
+---
+
+## Project Status
+
+**Current version:** `V1.0.0`
+
+**Status:** Active development
+
+ServiceHub V1.0.0 is focused on building a realistic service marketplace and operations platform rather than a simplified CRUD booking application.
+
+The system is being developed incrementally with real-world scheduling, provider operations, service-agent assignment, payments, verification, notifications, and administrative workflows in mind.
