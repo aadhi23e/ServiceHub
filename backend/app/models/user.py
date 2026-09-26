@@ -1,117 +1,85 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, Index, String, text
+from sqlalchemy import Boolean, DateTime, Index, String, text
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.enums.user import UserStatus
 
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.audit_log import AuditLog
     from app.models.booking import Booking
+    from app.models.dispute import Dispute
     from app.models.notification import Notification
-    from app.models.provider import ProviderProfile
+    from app.models.provider_membership import ProviderMembership
+    from app.models.provider_organization import ProviderOrganization
+    from app.models.provider_verification import ProviderVerification
     from app.models.review import Review
+    from app.models.service_issue import ServiceIssue
 
 
 class User(Base):
     __tablename__ = "users"
 
     __table_args__ = (
-        CheckConstraint(
-            "role IN ('CUSTOMER', 'PROVIDER', 'ADMIN')",
-            name="ck_users_role",
-        ),
-        CheckConstraint(
-            "status IN ('ACTIVE', 'SUSPENDED')",
-            name="ck_users_status",
-        ),
-        Index("ix_users_role", "role"),
         Index("ix_users_status", "status"),
+        Index("ix_users_phone", "phone"),
         Index("ix_users_created_at", "created_at"),
     )
 
-    id: Mapped[int] = mapped_column(
-        BigInteger,
-        primary_key=True,
-        autoincrement=True,
-    )
+    # Detial
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True),primary_key=True,default=uuid4,)
+    email: Mapped[str] = mapped_column(String(255),unique=True,nullable=False,)
+    password_hash: Mapped[str] = mapped_column(String(255),nullable=False,)
+    first_name: Mapped[str] = mapped_column(String(100),nullable=False,)
+    last_name: Mapped[str | None] = mapped_column(String(100),nullable=True,)
+    phone: Mapped[str | None] = mapped_column(String(20),nullable=True,)
 
-    email: Mapped[str] = mapped_column(
-        String(255),
-        unique=True,
-        nullable=False,
-    )
+    # Status
+    status: Mapped[UserStatus] = mapped_column(String(20),nullable=False,default=UserStatus.ACTIVE,server_default=UserStatus.ACTIVE.value,)
+    is_admin: Mapped[bool] = mapped_column(Boolean,nullable=False,default=False,server_default=text("false"),)
 
-    password_hash: Mapped[str] = mapped_column(
-        String(255),
-        nullable=False,
-    )
+    # address: Mapped[list["location"]] = TODO: NEED to have a [address because the customer can have more address] same goes for orginzation same orginzation different location
+    
+    # observability.
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True),nullable=True,)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),nullable=False,server_default=text("CURRENT_TIMESTAMP"),)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True),nullable=False,server_default=text("CURRENT_TIMESTAMP"),onupdate=datetime.utcnow,)
 
-    first_name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-    )
+    # ------------------------------------------------------------------
+    # Provider organization memberships
+    # ------------------------------------------------------------------
 
-    last_name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False,
-    )
+    provider_memberships: Mapped[list["ProviderMembership"]] = relationship(back_populates="user",foreign_keys="ProviderMembership.user_id",)
 
-    phone: Mapped[str | None] = mapped_column(
-        String(30),
-        nullable=True,
-    )
+    # ------------------------------------------------------------------
+    # Provider organizations created by this user
+    # ------------------------------------------------------------------
 
-    role: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False,
-    )
+    created_provider_organizations: Mapped[list["ProviderOrganization"]] = relationship(back_populates="created_by_user",foreign_keys="ProviderOrganization.created_by",)
 
-    status: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False,
-        default="ACTIVE",
-        server_default=text("'ACTIVE'"),
-    )
+    # ------------------------------------------------------------------
+    # Customer relationships
+    # ------------------------------------------------------------------
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP"),
-    )
+    customer_bookings: Mapped[list["Booking"]] = relationship(back_populates="customer",foreign_keys="Booking.customer_id",)
+    reviews: Mapped[list["Review"]] = relationship(back_populates="customer",foreign_keys="Review.customer_id",)
+    service_issues: Mapped[list["ServiceIssue"]] = relationship(back_populates="reported_by_user",foreign_keys="ServiceIssue.reported_by",)
+    disputes: Mapped[list["Dispute"]] = relationship(back_populates="opened_by_user",foreign_keys="Dispute.opened_by",)
 
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=text("CURRENT_TIMESTAMP"),
-        onupdate=datetime.utcnow,
-    )
+    # ------------------------------------------------------------------
+    # Notifications / audit
+    # ------------------------------------------------------------------
 
-    last_login_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
-    )
+    notifications: Mapped[list["Notification"]] = relationship(back_populates="user",foreign_keys="Notification.user_id",)
+    audit_logs: Mapped[list["AuditLog"]] = relationship(back_populates="actor",foreign_keys="AuditLog.actor_user_id",)
 
-    provider_profile: Mapped["ProviderProfile | None"] = relationship(
-        back_populates="user",
-        uselist=False,
-    )
+    # ------------------------------------------------------------------
+    # Provider verification
+    # ------------------------------------------------------------------
 
-    customer_bookings: Mapped[list["Booking"]] = relationship(
-        back_populates="customer",
-        foreign_keys="Booking.customer_id",
-    )
-
-    reviews: Mapped[list["Review"]] = relationship(
-        back_populates="customer",
-        foreign_keys="Review.customer_id",
-    )
-
-    notifications: Mapped[list["Notification"]] = relationship(
-        back_populates="user",
-    )
-
-    audit_logs: Mapped[list["AuditLog"]] = relationship(
-        back_populates="actor",
-    )
+    provider_verifications: Mapped[list["ProviderVerification"]] = relationship(back_populates="reviewed_by_user",foreign_keys="ProviderVerification.reviewed_by",)
