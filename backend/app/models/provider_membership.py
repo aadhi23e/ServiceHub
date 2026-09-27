@@ -23,7 +23,8 @@ from app.enums.provider import (
 if TYPE_CHECKING:
     from app.models.provider_organization import ProviderOrganization
     from app.models.user import User
-
+    from app.models.agent_availability import AgentAvailability
+    from app.models.agent_time_off import AgentTimeOff
 
 class ProviderMembership(Base):
     __tablename__ = "provider_memberships"
@@ -174,4 +175,14 @@ class ProviderMembership(Base):
     organization: Mapped["ProviderOrganization"] = relationship(
         back_populates="memberships",
         foreign_keys=[organization_id],
+    )
+
+    availabilities: Mapped[list["AgentAvailability"]] = relationship(
+        back_populates="agent_membership",
+        cascade="all, delete-orphan",
+    )
+
+    time_offs: Mapped[list["AgentTimeOff"]] = relationship(
+        back_populates="agent_membership",
+        cascade="all, delete-orphan",
     )

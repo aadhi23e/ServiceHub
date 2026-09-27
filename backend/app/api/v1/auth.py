@@ -50,7 +50,7 @@ def login(
     ],
 ) -> LoginResponse:
     login_response, refresh_token = auth_service.login(
-        request,
+        request=request,
     )
 
     settings = get_settings()

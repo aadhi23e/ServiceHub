@@ -1,3 +1,14 @@
+from typing import Annotated
+
+from redis import Redis
+from sqlalchemy.orm import Session
+
+from app.services.auth_service import AuthService
+from app.core.redis import get_redis
+from app.db.session import get_db
+
+from app.dependencies.core import DBSession
+
 from uuid import UUID
 
 from fastapi import Depends
@@ -15,11 +26,14 @@ bearer_scheme = HTTPBearer(auto_error=False)
 
 
 # Return the authentication service dependency.
-def get_auth_service():
-    from app.services.auth_service import AuthService
-
-    return AuthService
-
+def get_auth_service(
+    db: Annotated[Session, Depends(get_db)],
+    redis_client: Annotated[Redis, Depends(get_redis)],
+) -> AuthService:
+    return AuthService(
+        db=db,
+        redis_client=redis_client,
+    )
 
 # Extract the Bearer access token from the request.
 def get_current_token(

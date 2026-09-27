@@ -59,7 +59,7 @@ class AgentTimeOff(Base):
     )
 
     agent_membership: Mapped["ProviderMembership"] = relationship(
-        back_populates="time_off",
+        back_populates="time_offs",
     )
 
     __table_args__ = (
