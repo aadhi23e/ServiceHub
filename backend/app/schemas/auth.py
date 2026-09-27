@@ -1,56 +1,47 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+# app/schemas/auth.py
 
-from app.enums.user import UserRole, UserStatus
+from pydantic import BaseModel, EmailStr, Field
+
+from app.enums.user import UserRole
 
 
 class RegisterRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
+
     first_name: str = Field(min_length=1, max_length=100)
     last_name: str = Field(min_length=1, max_length=100)
-    phone: str | None = Field(default=None, max_length=30)
+
+    phone: str | None = Field(default=None, max_length=20)
+
+    role: UserRole = UserRole.CUSTOMER
 
 
 class LoginRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
     email: EmailStr
-    password: str = Field(min_length=1, max_length=128)
+    password: str
 
 
 class UserResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
+    id: str
     email: EmailStr
     first_name: str
     last_name: str
     phone: str | None
+
     role: UserRole
-    status: UserStatus
+    status: str
 
-
-class LoginResponse(BaseModel):
-    user: UserResponse
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int
-
-
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-    expires_in: int
+    class Config:
+        from_attributes = True
 
 
 class AuthResponse(BaseModel):
-    user: UserResponse
     access_token: str
     token_type: str = "bearer"
-    expires_in: int
-
-
-class RegisterResponse(BaseModel):
     user: UserResponse
+
+
+class RefreshResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
