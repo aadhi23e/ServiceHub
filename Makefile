@@ -1,4 +1,5 @@
-COMPOSE = docker compose -f docker-compose.local.yml
+# COMPOSE = docker compose -f docker-compose.local.yml
+COMPOSE = docker compose
 
 .PHONY: setup up down restart ps logs build test lint format-check typecheck check db-upgrade db-downgrade
 

@@ -2,7 +2,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, model_validator
 
-from app.enums.user import UserRole, UserStatus
+from app.enums.user import RegistrationRole, UserStatus, UserRole
 
 
 class RegisterRequest(BaseModel):
@@ -14,7 +14,7 @@ class RegisterRequest(BaseModel):
     last_name: str = Field(min_length=1, max_length=100)
     phone: str | None = Field(default=None, max_length=30)
 
-    role: UserRole = UserRole.CUSTOMER
+    role: RegistrationRole = RegistrationRole.CUSTOMER
 
     organization_name: str | None = Field(
         default=None,
@@ -27,19 +27,15 @@ class RegisterRequest(BaseModel):
         max_length=150,
     )
 
-    @model_validator(mode="before")
+    @model_validator(mode="after")
     def validate_registration(self) -> "RegisterRequest":
-        if self.role == UserRole.ADMIN:
-            raise ValueError(
-                "Administrator accounts cannot be created through public registration."
-            )
 
-        if self.role == UserRole.PROVIDER and not self.organization_name:
+        if self.role == RegistrationRole.PROVIDER and not self.organization_name:
             raise ValueError(
                 "organization_name is required when registering as a provider."
             )
 
-        if self.role == UserRole.CUSTOMER:
+        if self.role == RegistrationRole.CUSTOMER:
             if self.organization_name is not None:
                 raise ValueError(
                     "organization_name is only allowed for provider registration."
@@ -51,7 +47,6 @@ class RegisterRequest(BaseModel):
                 )
 
         return self
-
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")

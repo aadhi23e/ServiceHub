@@ -6,6 +6,10 @@ class UserRole(StrEnum):
     PROVIDER = "PROVIDER"
     ADMIN = "ADMIN"
 
+class RegistrationRole(StrEnum):
+    CUSTOMER = "CUSTOMER"
+    PROVIDER = "PROVIDER"
+    
 
 class UserStatus(StrEnum):
     ACTIVE = "ACTIVE"
