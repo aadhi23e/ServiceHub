@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, time
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
@@ -9,8 +9,9 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
-    String,
-    Text,
+    Integer,
+    Time,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -19,11 +20,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.service import Service
+    from app.models.provider_location import ProviderLocation
 
 
-class ServiceCategory(Base):
-    __tablename__ = "service_categories"
+class ProviderOperatingHours(Base):
+    __tablename__ = "provider_operating_hours"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -31,21 +32,24 @@ class ServiceCategory(Base):
         default=uuid4,
     )
 
-    parent_id: Mapped[UUID | None] = mapped_column(
+    provider_location_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("service_categories.id", ondelete="SET NULL"),
-    )
-
-    name: Mapped[str] = mapped_column(
-        String(100),
+        ForeignKey("provider_locations.id", ondelete="CASCADE"),
         nullable=False,
     )
 
-    description: Mapped[str | None] = mapped_column(Text)
+    day_of_week: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+    )
 
-    is_active: Mapped[bool] = mapped_column(
+    opens_at: Mapped[time | None] = mapped_column(Time)
+
+    closes_at: Mapped[time | None] = mapped_column(Time)
+
+    is_closed: Mapped[bool] = mapped_column(
         Boolean,
-        default=True,
+        default=False,
         nullable=False,
     )
 
@@ -62,26 +66,18 @@ class ServiceCategory(Base):
         nullable=False,
     )
 
-    parent: Mapped["ServiceCategory | None"] = relationship(
-        remote_side="ServiceCategory.id",
-        back_populates="children",
-    )
-
-    children: Mapped[list["ServiceCategory"]] = relationship(
-        back_populates="parent",
-    )
-
-    services: Mapped[list["Service"]] = relationship(
-        back_populates="category",
+    provider_location: Mapped["ProviderLocation"] = relationship(
+        back_populates="operating_hours",
     )
 
     __table_args__ = (
-        Index(
-            "ix_service_categories_parent_id",
-            "parent_id",
+        UniqueConstraint(
+            "provider_location_id",
+            "day_of_week",
+            name="uq_provider_operating_hours_location_day",
         ),
         Index(
-            "ix_service_categories_name",
-            "name",
+            "ix_provider_operating_hours_location_id",
+            "provider_location_id",
         ),
     )

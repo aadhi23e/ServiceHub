@@ -10,7 +10,7 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     String,
-    Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -19,11 +19,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 
 if TYPE_CHECKING:
-    from app.models.service import Service
+    from app.models.provider_organization import ProviderOrganization
 
 
-class ServiceCategory(Base):
-    __tablename__ = "service_categories"
+class ProviderServiceArea(Base):
+    __tablename__ = "provider_service_areas"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -31,17 +31,31 @@ class ServiceCategory(Base):
         default=uuid4,
     )
 
-    parent_id: Mapped[UUID | None] = mapped_column(
+    organization_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("service_categories.id", ondelete="SET NULL"),
+        ForeignKey("provider_organizations.id", ondelete="CASCADE"),
+        nullable=False,
     )
 
     name: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+    )
+
+    postal_code: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+    )
+
+    city: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
     )
 
-    description: Mapped[str | None] = mapped_column(Text)
+    state: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
 
     is_active: Mapped[bool] = mapped_column(
         Boolean,
@@ -62,26 +76,22 @@ class ServiceCategory(Base):
         nullable=False,
     )
 
-    parent: Mapped["ServiceCategory | None"] = relationship(
-        remote_side="ServiceCategory.id",
-        back_populates="children",
-    )
-
-    children: Mapped[list["ServiceCategory"]] = relationship(
-        back_populates="parent",
-    )
-
-    services: Mapped[list["Service"]] = relationship(
-        back_populates="category",
+    organization: Mapped["ProviderOrganization"] = relationship(
+        back_populates="service_areas",
     )
 
     __table_args__ = (
-        Index(
-            "ix_service_categories_parent_id",
-            "parent_id",
+        UniqueConstraint(
+            "organization_id",
+            "postal_code",
+            name="uq_provider_service_areas_org_postal_code",
         ),
         Index(
-            "ix_service_categories_name",
-            "name",
+            "ix_provider_service_areas_organization_id",
+            "organization_id",
+        ),
+        Index(
+            "ix_provider_service_areas_postal_code",
+            "postal_code",
         ),
     )

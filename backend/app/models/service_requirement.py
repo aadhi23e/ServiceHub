@@ -9,21 +9,25 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
+    JSON,
     String,
     Text,
     func,
 )
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Enum as SAEnum
 
+from app.enums.servicehub import RequirementType
 from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.service import Service
 
 
-class ServiceCategory(Base):
-    __tablename__ = "service_categories"
+class ServiceRequirement(Base):
+    __tablename__ = "service_requirements"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -31,9 +35,10 @@ class ServiceCategory(Base):
         default=uuid4,
     )
 
-    parent_id: Mapped[UUID | None] = mapped_column(
+    service_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("service_categories.id", ondelete="SET NULL"),
+        ForeignKey("services.id", ondelete="CASCADE"),
+        nullable=False,
     )
 
     name: Mapped[str] = mapped_column(
@@ -43,10 +48,29 @@ class ServiceCategory(Base):
 
     description: Mapped[str | None] = mapped_column(Text)
 
-    is_active: Mapped[bool] = mapped_column(
+    requirement_type: Mapped[RequirementType] = mapped_column(
+        SAEnum(
+            RequirementType,
+            name="requirement_type",
+            native_enum=True,
+        ),
+        nullable=False,
+    )
+
+    is_required: Mapped[bool] = mapped_column(
         Boolean,
         default=True,
         nullable=False,
+    )
+
+    display_order: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+    )
+
+    options: Mapped[dict | None] = mapped_column(
+        JSON,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -62,26 +86,13 @@ class ServiceCategory(Base):
         nullable=False,
     )
 
-    parent: Mapped["ServiceCategory | None"] = relationship(
-        remote_side="ServiceCategory.id",
-        back_populates="children",
-    )
-
-    children: Mapped[list["ServiceCategory"]] = relationship(
-        back_populates="parent",
-    )
-
-    services: Mapped[list["Service"]] = relationship(
-        back_populates="category",
+    service: Mapped["Service"] = relationship(
+        back_populates="requirements",
     )
 
     __table_args__ = (
         Index(
-            "ix_service_categories_parent_id",
-            "parent_id",
-        ),
-        Index(
-            "ix_service_categories_name",
-            "name",
+            "ix_service_requirements_service_id",
+            "service_id",
         ),
     )

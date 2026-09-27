@@ -1,18 +1,15 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import TYPE_CHECKING
+from uuid import UUID, uuid4
 
-from sqlalchemy import (
-    BigInteger,
-    CheckConstraint,
-    DateTime,
-    ForeignKey,
-    Index,
-    String,
-    Text,
-    text,
-)
+from sqlalchemy import DateTime, ForeignKey, Index, String, Text, func
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Enum as SAEnum
 
+from app.enums.servicehub import NotificationStatus, NotificationType
 from app.db.base import Base
 
 if TYPE_CHECKING:
@@ -22,41 +19,34 @@ if TYPE_CHECKING:
 class Notification(Base):
     __tablename__ = "notifications"
 
-    __table_args__ = (
-        CheckConstraint(
-            "status IN ('UNREAD', 'READ')",
-            name="ck_notifications_status",
-        ),
-        Index(
-            "ix_notifications_user_created",
-            "user_id",
-            "created_at",
-        ),
-        Index(
-            "ix_notifications_user_unread",
-            "user_id",
-            "created_at",
-            postgresql_where=text("status = 'UNREAD'"),
-        ),
-    )
-
-    id: Mapped[int] = mapped_column(
-        BigInteger,
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
         primary_key=True,
-        autoincrement=True,
+        default=uuid4,
     )
 
-    user_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey(
-            "users.id",
-            ondelete="CASCADE",
+    user_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+
+    notification_type: Mapped[NotificationType] = mapped_column(
+        SAEnum(
+            NotificationType,
+            name="notification_type",
+            native_enum=True,
         ),
         nullable=False,
     )
 
-    type: Mapped[str] = mapped_column(
-        String(50),
+    status: Mapped[NotificationStatus] = mapped_column(
+        SAEnum(
+            NotificationStatus,
+            name="notification_status",
+            native_enum=True,
+        ),
+        default=NotificationStatus.UNREAD,
         nullable=False,
     )
 
@@ -70,24 +60,22 @@ class Notification(Base):
         nullable=False,
     )
 
-    status: Mapped[str] = mapped_column(
-        String(20),
-        nullable=False,
-        default="UNREAD",
-        server_default=text("'UNREAD'"),
+    read_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
     )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
+        server_default=func.now(),
         nullable=False,
-        server_default=text("CURRENT_TIMESTAMP"),
-    )
-
-    read_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True),
-        nullable=True,
     )
 
     user: Mapped["User"] = relationship(
         back_populates="notifications",
+    )
+
+    __table_args__ = (
+        Index("ix_notifications_user_id", "user_id"),
+        Index("ix_notifications_status", "status"),
+        Index("ix_notifications_created_at", "created_at"),
     )
