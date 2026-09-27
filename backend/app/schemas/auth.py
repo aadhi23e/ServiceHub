@@ -27,7 +27,7 @@ class RegisterRequest(BaseModel):
         max_length=150,
     )
 
-    @model_validator(mode="after")
+    @model_validator(mode="before")
     def validate_registration(self) -> "RegisterRequest":
         if self.role == UserRole.ADMIN:
             raise ValueError(

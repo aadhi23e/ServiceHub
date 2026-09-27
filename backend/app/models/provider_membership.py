@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from app.models.user import User
     from app.models.agent_availability import AgentAvailability
     from app.models.agent_time_off import AgentTimeOff
-
+    from app.models.booking_assignment import BookingAssignment
 class ProviderMembership(Base):
     __tablename__ = "provider_memberships"
 
@@ -186,3 +186,8 @@ class ProviderMembership(Base):
         back_populates="agent_membership",
         cascade="all, delete-orphan",
     )
+
+    booking_assignments: Mapped[list["BookingAssignment"]] = relationship(
+        back_populates="agent_membership",
+    )
+    
