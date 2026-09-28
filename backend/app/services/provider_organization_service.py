@@ -1,3 +1,4 @@
+from math import ceil
 from uuid import UUID
 
 from sqlalchemy.exc import IntegrityError
@@ -11,7 +12,12 @@ from app.repositories.provider_organization_repository import (
     ProviderOrganizationRepository,
 )
 from app.schemas.provider_organization import (
+    ProviderOrganizationAdminListItem,
+    ProviderOrganizationAdminResponse,
     ProviderOrganizationListItem,
+    ProviderOrganizationListResponse,
+    ProviderOrganizationPublicResponse,
+    ProviderOrganizationResponse,
     ProviderOrganizationSummaryResponse,
     ProviderOrganizationUpdateRequest,
 )
@@ -22,11 +28,63 @@ class ProviderOrganizationService:
         self.db = db
         self.repository = ProviderOrganizationRepository(db)
 
-    # Return one organization after verifying it exists.
-    def get_organization(
+    # Return a public organization.
+    def get_public_organization(
         self,
         organization_id: UUID,
-    ) -> ProviderOrganization:
+    ) -> ProviderOrganizationPublicResponse:
+        organization = self.repository.get_public_by_id(
+            organization_id
+        )
+
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Organization not found."
+            )
+
+        return ProviderOrganizationPublicResponse.model_validate(
+            organization
+        )
+
+    # Return publicly visible organizations with pagination.
+    def list_public_organizations(
+        self,
+        *,
+        search: str | None,
+        page: int,
+        page_size: int,
+    ) -> ProviderOrganizationListResponse:
+        offset = (page - 1) * page_size
+
+        organizations, total = self.repository.list_public(
+            search=search,
+            offset=offset,
+            limit=page_size,
+        )
+
+        total_pages = ceil(total / page_size) if total else 0
+
+        items = [
+            ProviderOrganizationListItem.model_validate(
+                organization
+            )
+            for organization in organizations
+        ]
+
+        return ProviderOrganizationListResponse(
+            items=items,
+            page=page,
+            page_size=page_size,
+            total=total,
+            total_pages=total_pages,
+        )
+
+    # Return the organization belonging to the current provider.
+    def get_my_organization(
+        self,
+        *,
+        organization_id: UUID,
+    ) -> ProviderOrganizationResponse:
         organization = self.repository.get_by_id(
             organization_id
         )
@@ -36,35 +94,25 @@ class ProviderOrganizationService:
                 message="Provider organization not found."
             )
 
-        return organization
-
-    # Return all organizations the current user actively belongs to.
-    def list_organizations(
-        self,
-        *,
-        user_id: UUID,
-    ) -> list[ProviderOrganizationListItem]:
-        organizations = self.repository.list_for_user(
-            user_id=user_id,
+        return ProviderOrganizationResponse.model_validate(
+            organization
         )
 
-        return [
-            ProviderOrganizationListItem.model_validate(
-                organization
-            )
-            for organization in organizations
-        ]
-
-    # Update editable organization information.
-    def update_organization(
+    # Update provider organization information.
+    def update_my_organization(
         self,
         *,
         organization_id: UUID,
         data: ProviderOrganizationUpdateRequest,
-    ) -> ProviderOrganization:
-        organization = self.get_organization(
+    ) -> ProviderOrganizationResponse:
+        organization = self.repository.get_by_id(
             organization_id
         )
+
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Provider organization not found."
+            )
 
         if organization.status in {
             ProviderStatus.SUSPENDED,
@@ -73,16 +121,18 @@ class ProviderOrganizationService:
             raise ConflictError(
                 message=(
                     "A suspended or deactivated organization "
-                    "cannot be updated."
+                    "cannot be edited."
                 )
             )
 
         update_data = data.model_dump(
-            exclude_unset=True,
+            exclude_unset=True
         )
 
         if not update_data:
-            return organization
+            return ProviderOrganizationResponse.model_validate(
+                organization
+            )
 
         try:
             organization = self.repository.update(
@@ -93,7 +143,9 @@ class ProviderOrganizationService:
             self.db.commit()
             self.db.refresh(organization)
 
-            return organization
+            return ProviderOrganizationResponse.model_validate(
+                organization
+            )
 
         except IntegrityError as exc:
             self.db.rollback()
@@ -106,44 +158,91 @@ class ProviderOrganizationService:
             self.db.rollback()
             raise
 
-    # Return operational summary information for an organization.
-    def get_summary(
+    # Return the complete organization record for platform administration.
+    def get_admin_organization(
+        self,
+        organization_id: UUID,
+    ) -> ProviderOrganizationAdminResponse:
+        organization = self.repository.get_by_id(
+            organization_id
+        )
+
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Organization not found."
+            )
+
+        return ProviderOrganizationAdminResponse.model_validate(
+            organization
+        )
+
+    # Return all organizations for platform administration.
+    def list_admin_organizations(
+        self,
+        *,
+        search: str | None,
+        status: ProviderStatus | None,
+        page: int,
+        page_size: int,
+    ) -> list[ProviderOrganizationAdminListItem]:
+        offset = (page - 1) * page_size
+
+        organizations, _ = self.repository.list_all(
+            search=search,
+            status=status,
+            offset=offset,
+            limit=page_size,
+        )
+
+        return [
+            ProviderOrganizationAdminListItem.model_validate(
+                organization
+            )
+            for organization in organizations
+        ]
+
+    # Return organization operational summary for platform administration.
+    def get_admin_summary(
         self,
         organization_id: UUID,
     ) -> ProviderOrganizationSummaryResponse:
-        organization = self.get_organization(
+        organization = self.repository.get_by_id(
             organization_id
         )
 
-        member_count = self.repository.count_active_members(
-            organization_id
-        )
-
-        location_count = self.repository.count_active_locations(
-            organization_id
-        )
-
-        service_count = self.repository.count_services(
-            organization_id
-        )
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Organization not found."
+            )
 
         return ProviderOrganizationSummaryResponse(
             id=organization.id,
             name=organization.name,
             status=organization.status,
-            member_count=member_count,
-            location_count=location_count,
-            service_count=service_count,
+            member_count=self.repository.count_active_members(
+                organization.id
+            ),
+            location_count=self.repository.count_locations(
+                organization.id
+            ),
+            service_count=self.repository.count_services(
+                organization.id
+            ),
         )
 
-    # Deactivate an active provider organization.
+    # Deactivate an organization through the platform administration API.
     def deactivate_organization(
         self,
         organization_id: UUID,
     ) -> ProviderOrganization:
-        organization = self.get_organization(
+        organization = self.repository.get_by_id(
             organization_id
         )
+
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Organization not found."
+            )
 
         if organization.status == ProviderStatus.DEACTIVATED:
             raise ConflictError(
@@ -153,13 +252,13 @@ class ProviderOrganizationService:
         if organization.status != ProviderStatus.ACTIVE:
             raise ConflictError(
                 message=(
-                    "Only an active organization can be "
-                    "deactivated."
+                    "Only an active organization can "
+                    "be deactivated."
                 )
             )
 
         try:
-            organization = self.repository.set_status(
+            self.repository.set_status(
                 organization,
                 ProviderStatus.DEACTIVATED,
             )
@@ -173,14 +272,19 @@ class ProviderOrganizationService:
             self.db.rollback()
             raise
 
-    # Reactivate a previously deactivated provider organization.
+    # Reactivate an organization through the platform administration API.
     def reactivate_organization(
         self,
         organization_id: UUID,
     ) -> ProviderOrganization:
-        organization = self.get_organization(
+        organization = self.repository.get_by_id(
             organization_id
         )
+
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Organization not found."
+            )
 
         if organization.status == ProviderStatus.ACTIVE:
             raise ConflictError(
@@ -196,7 +300,7 @@ class ProviderOrganizationService:
             )
 
         try:
-            organization = self.repository.set_status(
+            self.repository.set_status(
                 organization,
                 ProviderStatus.ACTIVE,
             )

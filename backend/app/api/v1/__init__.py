@@ -6,7 +6,7 @@ from app.api.v1.auth import router as auth_router
 # from app.api.v1.bookings import router as bookings_router
 # from app.api.v1.providers import router as providers_router
 # from app.api.v1.service_categories import router as services_router
-from app.api.v1.providers.organizations import (
+from app.api.v1.organizations import (
     router as provider_organizations_router,
 )
 

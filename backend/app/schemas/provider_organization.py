@@ -18,6 +18,19 @@ class ProviderOrganizationResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+# TODO: Need to be update
+class ProviderOrganizationPublicResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    legal_name: str | None
+    description: str | None
+    status: ProviderStatus
+    created_by: UUID
+    created_at: datetime
+    updated_at: datetime
+
 class ProviderOrganizationUpdateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -44,7 +57,19 @@ class ProviderOrganizationListItem(BaseModel):
     name: str
     status: ProviderStatus
 
+class ProviderOrganizationAdminListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    status: ProviderStatus
+
 class ProviderOrganizationListResponse(BaseModel):
+    items: list[ProviderOrganizationListItem]
+    total: int
+
+# TODO: need to change this 
+class ProviderOrganizationAdminResponse(BaseModel):
     items: list[ProviderOrganizationListItem]
     total: int
 
