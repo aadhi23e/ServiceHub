@@ -15,7 +15,7 @@ from app.core.exception_handlers import (
 from app.core.exceptions import ServiceHubError
 from app.core.logging import configure_logging, logger
 
-from app.middleware.request_id import RequestIDMiddleware
+from app.middleware.request_id import RequestContextMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 
 settings = get_settings()
@@ -42,7 +42,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-app.add_middleware(RequestIDMiddleware)
+app.add_middleware(RequestContextMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[

@@ -5,19 +5,56 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 
 
-class RequestIDMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        request_id = request.headers.get("X-Request-ID") or f"req_{uuid4().hex}"
+REQUEST_ID_HEADER = "X-Request-ID"
 
-        request.state.request_id = request_id
 
-        structlog.contextvars.clear_contextvars()
-        structlog.contextvars.bind_contextvars(
-            request_id=request_id,
+class RequestContextMiddleware(BaseHTTPMiddleware):
+    async def dispatch(
+        self,
+        request: Request,
+        call_next,
+    ):
+        # --------------------------------------------------------
+        # Request ID
+        # --------------------------------------------------------
+        request_id = (
+            request.headers.get(REQUEST_ID_HEADER)
+            or f"req_{uuid4().hex}"
         )
 
-        response = await call_next(request)
+        # --------------------------------------------------------
+        # Track ID
+        # --------------------------------------------------------
+        track_id = f"trk_{uuid4().hex}"
 
-        response.headers["X-Request-ID"] = request_id
+        # --------------------------------------------------------
+        # Store on request.state
+        # --------------------------------------------------------
+        request.state.request_id = request_id
+        request.state.track_id = track_id
 
-        return response
+        # --------------------------------------------------------
+        # Bind to structlog context
+        # --------------------------------------------------------
+        structlog.contextvars.clear_contextvars()
+
+        structlog.contextvars.bind_contextvars(
+            request_id=request_id,
+            track_id=track_id,
+        )
+
+        try:
+            response = await call_next(request)
+
+            # ----------------------------------------------------
+            # Return correlation ID to client
+            # ----------------------------------------------------
+            response.headers[REQUEST_ID_HEADER] = request_id
+
+            return response
+
+        finally:
+            # ----------------------------------------------------
+            # Prevent context leaking into another request
+            # ----------------------------------------------------
+            structlog.contextvars.clear_contextvars()
