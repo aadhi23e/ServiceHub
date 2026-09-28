@@ -20,7 +20,11 @@ from app.enums.provider import ProviderStatus
 if TYPE_CHECKING:
     from app.models.provider_membership import ProviderMembership
     from app.models.user import User
-
+    from app.models.booking import Booking
+    from app.models.provider_location import ProviderLocation
+    from app.models.provider_service_area import ProviderServiceArea
+    from app.models.provider_verification import ProviderVerification
+    from app.models.service import Service
 
 class ProviderOrganization(Base):
     __tablename__ = "provider_organizations"
@@ -119,4 +123,26 @@ class ProviderOrganization(Base):
         foreign_keys="ProviderMembership.organization_id",
         cascade="all, delete-orphan",
         passive_deletes=True,
+    )
+
+    bookings: Mapped[list["Booking"]] = relationship(
+        back_populates="organization",
+    )
+
+    locations: Mapped[list["ProviderLocation"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    service_areas: Mapped[list["ProviderServiceArea"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
+    )
+    
+    verifications: Mapped[list["ProviderVerification"]] = relationship(
+        back_populates="organization",
+    )
+    
+    services: Mapped[list["Service"]] = relationship(
+        back_populates="organization",
+        cascade="all, delete-orphan",
     )

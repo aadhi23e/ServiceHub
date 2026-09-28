@@ -93,9 +93,14 @@ class User(Base):
 
     customer_bookings: Mapped[list["Booking"]] = relationship(back_populates="customer",foreign_keys="Booking.customer_id",)
     reviews: Mapped[list["Review"]] = relationship(back_populates="customer",foreign_keys="Review.customer_id",)
-    service_issues: Mapped[list["ServiceIssue"]] = relationship(back_populates="reported_by_user",foreign_keys="ServiceIssue.reported_by",)
-    disputes: Mapped[list["Dispute"]] = relationship(back_populates="opened_by_user",foreign_keys="Dispute.opened_by",)
-
+    service_issues: Mapped[list["ServiceIssue"]] = relationship(
+        back_populates="customer",
+        foreign_keys="ServiceIssue.customer_id",
+    )
+    disputes: Mapped[list["Dispute"]] = relationship(
+        back_populates="raised_by_user",
+        foreign_keys="Dispute.raised_by",
+    )
     # ------------------------------------------------------------------
     # Notifications / audit
     # ------------------------------------------------------------------

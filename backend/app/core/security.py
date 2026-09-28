@@ -76,7 +76,8 @@ def create_access_token(
         settings.jwt_secret_key,
         algorithm=settings.jwt_algorithm,
     )
-
+    print("-----")
+    # print(token, int(expires_delta.total_seconds()))
     return token, int(expires_delta.total_seconds())
 
 

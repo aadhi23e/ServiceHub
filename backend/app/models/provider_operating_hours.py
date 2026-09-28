@@ -66,10 +66,10 @@ class ProviderOperatingHours(Base):
         nullable=False,
     )
 
-    provider_location: Mapped["ProviderLocation"] = relationship(
+    location: Mapped["ProviderLocation"] = relationship(
         back_populates="operating_hours",
     )
-
+    
     __table_args__ = (
         UniqueConstraint(
             "provider_location_id",

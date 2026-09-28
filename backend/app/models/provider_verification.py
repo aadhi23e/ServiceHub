@@ -22,7 +22,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.provider_organization import ProviderOrganization
     from app.models.user import User
-
+    # from app.models.provider_service import ProviderService
 
 class ProviderVerification(Base):
     __tablename__ = "provider_verifications"
@@ -85,11 +85,12 @@ class ProviderVerification(Base):
         back_populates="verifications",
     )
 
-    reviewer: Mapped["User | None"] = relationship(
+    reviewed_by_user: Mapped["User | None"] = relationship(
         back_populates="reviewed_provider_verifications",
         foreign_keys=[reviewed_by],
     )
 
+    
     __table_args__ = (
         Index(
             "ix_provider_verifications_organization_id",

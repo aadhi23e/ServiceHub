@@ -1,5 +1,3 @@
-from datetime import UTC, datetime
-
 from redis import Redis
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -15,14 +13,14 @@ from app.core.security import (
 )
 from app.enums.user import UserRole, UserStatus
 from app.models.user import User
+from app.repositories.auth_repository import AuthRepository
 from app.repositories.auth_session_repository import AuthSessionRepository
-from app.repositories.user_repository import UserRepository
 from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
     RegisterRequest,
-    UserResponse,
     TokenResponse,
+    UserResponse,
 )
 
 
@@ -33,18 +31,19 @@ class AuthService:
         redis_client: Redis,
     ) -> None:
         self.db = db
-        self.user_repository = UserRepository(db)
+        self.auth_repository = AuthRepository(db)
         self.auth_session_repository = AuthSessionRepository(
             redis_client,
         )
 
+    # Register a customer or provider account.
     def register(
         self,
         request: RegisterRequest,
     ) -> UserResponse:
         email = str(request.email).lower()
 
-        existing_user = self.user_repository.get_by_email(
+        existing_user = self.auth_repository.get_user_by_email(
             email,
         )
 
@@ -60,13 +59,31 @@ class AuthService:
             first_name=request.first_name.strip(),
             last_name=request.last_name.strip(),
             phone=request.phone.strip() if request.phone else None,
-            #    role=UserRole.CUSTOMER.value, #TODO
-            role=UserRole.PROVIDER.value,
-            status=UserStatus.ACTIVE.value,
+            role=request.role,
+            status=UserStatus.ACTIVE,
         )
 
         try:
-            self.user_repository.create(user)
+            if request.role == UserRole.CUSTOMER:
+                self.auth_repository.create_user(user)
+
+            elif request.role == UserRole.PROVIDER:
+                self.auth_repository.create_provider_account(
+                    user=user,
+                    display_name=(
+                        f"{request.first_name.strip()} "
+                        f"{request.last_name.strip()}"
+                    ),
+                    organization_name=request.organization_name,
+                    legal_name=request.legal_name,
+                )
+
+            else:
+                raise ConflictError(
+                    code="INVALID_REGISTRATION_ROLE",
+                    message="This user role cannot be registered publicly.",
+                )
+
             self.db.commit()
             self.db.refresh(user)
 
@@ -74,19 +91,26 @@ class AuthService:
             self.db.rollback()
 
             raise ConflictError(
-                code="EMAIL_ALREADY_EXISTS",
-                message="An account with this email already exists.",
+                code="REGISTRATION_CONFLICT",
+                message="The account could not be created because the requested information already exists.",
             ) from exc
+
+        except Exception:
+            self.db.rollback()
+            raise
 
         return UserResponse.model_validate(user)
 
+    # Authenticate a customer or provider and create a refresh session.
     def login(
         self,
         request: LoginRequest,
     ) -> tuple[LoginResponse, str]:
         email = str(request.email).lower()
 
-        user = self.user_repository.get_by_email(email)
+        user = self.auth_repository.get_user_by_email(
+            email,
+        )
 
         if user is None:
             raise AuthenticationError(
@@ -101,14 +125,19 @@ class AuthService:
                 message="Invalid email or password.",
             )
 
-        if user.status != UserStatus.ACTIVE.value:
+        if user.status != UserStatus.ACTIVE:
+            raise AuthenticationError(
+                message="Invalid email or password.",
+            )
+
+        if user.role == UserRole.ADMIN:
             raise AuthenticationError(
                 message="Invalid email or password.",
             )
 
         access_token, expires_in = create_access_token(
             user_id=user.id,
-            role=user.role,
+            role=user.role.value,
         )
 
         refresh_token = generate_refresh_token()
@@ -118,7 +147,12 @@ class AuthService:
 
         settings = get_settings()
 
-        refresh_expires_in = settings.refresh_token_expire_days * 24 * 60 * 60
+        refresh_expires_in = (
+            settings.refresh_token_expire_days
+            * 24
+            * 60
+            * 60
+        )
 
         self.auth_session_repository.create(
             token_hash=refresh_token_hash,
@@ -126,12 +160,9 @@ class AuthService:
             expires_in_seconds=refresh_expires_in,
         )
 
-        now = datetime.now(UTC)
-
-        user.last_login_at = now
-        user.updated_at = now
-
         try:
+            self.auth_repository.update_last_login(user)
+
             self.db.commit()
             self.db.refresh(user)
 
@@ -153,7 +184,11 @@ class AuthService:
 
         return response, refresh_token
 
-    def logout(self, refresh_token: str | None) -> None:
+    # Revoke the current refresh session.
+    def logout(
+        self,
+        refresh_token: str | None,
+    ) -> None:
         if not refresh_token:
             return
 
@@ -165,6 +200,7 @@ class AuthService:
             refresh_token_hash,
         )
 
+    # Rotate the refresh token and issue a new access token.
     def refresh(
         self,
         refresh_token: str,
@@ -182,21 +218,28 @@ class AuthService:
                 message="Invalid or expired refresh token.",
             )
 
-        user = self.user_repository.get_by_id(user_id)
+        user = self.auth_repository.get_user_by_id(
+            user_id,
+        )
 
         if user is None:
             raise AuthenticationError(
                 message="Invalid or expired refresh token.",
             )
 
-        if user.status != UserStatus.ACTIVE.value:
+        if user.status != UserStatus.ACTIVE:
+            raise AuthenticationError(
+                message="Invalid or expired refresh token.",
+            )
+
+        if user.role == UserRole.ADMIN:
             raise AuthenticationError(
                 message="Invalid or expired refresh token.",
             )
 
         access_token, expires_in = create_access_token(
             user_id=user.id,
-            role=user.role,
+            role=user.role.value,
         )
 
         new_refresh_token = generate_refresh_token()
@@ -207,7 +250,12 @@ class AuthService:
 
         settings = get_settings()
 
-        refresh_expires_in = settings.refresh_token_expire_days * 24 * 60 * 60
+        refresh_expires_in = (
+            settings.refresh_token_expire_days
+            * 24
+            * 60
+            * 60
+        )
 
         self.auth_session_repository.create(
             token_hash=new_refresh_token_hash,

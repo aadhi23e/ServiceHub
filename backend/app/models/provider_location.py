@@ -15,7 +15,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.address import Address
     from app.models.provider_organization import ProviderOrganization
-
+    from app.models.provider_operating_hours import ProviderOperatingHours
 
 class ProviderLocation(Base):
     __tablename__ = "provider_locations"
@@ -75,6 +75,10 @@ class ProviderLocation(Base):
 
     address: Mapped["Address"] = relationship()
 
+    operating_hours: Mapped[list["ProviderOperatingHours"]] = relationship(
+        back_populates="location",
+        cascade="all, delete-orphan",
+    )
     __table_args__ = (
         Index("ix_provider_locations_organization_id", "organization_id"),
         Index("ix_provider_locations_address_id", "address_id"),

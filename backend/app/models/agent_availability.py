@@ -73,7 +73,7 @@ class AgentAvailability(Base):
     )
 
     agent_membership: Mapped["ProviderMembership"] = relationship(
-        back_populates="availability",
+        back_populates="availabilities",
     )
 
     __table_args__ = (
