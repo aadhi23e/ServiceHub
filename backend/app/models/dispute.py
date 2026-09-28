@@ -83,7 +83,10 @@ class Dispute(Base):
         back_populates="disputes",
     )
 
-    raised_by_user: Mapped["User"] = relationship()
+    raised_by_user: Mapped["User"] = relationship(
+        back_populates="disputes",
+        foreign_keys=[raised_by],
+    )
 
     __table_args__ = (
         Index("ix_disputes_booking_id", "booking_id"),
