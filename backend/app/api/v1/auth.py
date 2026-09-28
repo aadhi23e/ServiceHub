@@ -1,20 +1,17 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Depends, Request, Response, status
+from fastapi import APIRouter, Depends, Response, status, Request
 
-from app.core.config import get_settings
-from app.core.exceptions import AuthenticationError
+from app.dependencies.auth import get_auth_service
+from app.services.auth_service import AuthService
+
 from app.core.rate_limit_dependencies import (
     login_rate_limit,
-    refresh_rate_limit,
     registration_rate_limit,
+    refresh_rate_limit,
 )
-from app.dependencies.auth import (
-    get_auth_service,
-    get_current_user,
-)
-from app.models.user import User
+from app.dependencies.auth import get_auth_service
 from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
@@ -23,8 +20,10 @@ from app.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
-from app.services.auth_service import AuthService
-
+from app.core.exceptions import AuthenticationError
+from app.core.config import get_settings
+from app.dependencies.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter(
     prefix="/auth",
@@ -34,7 +33,6 @@ router = APIRouter(
 logger = structlog.get_logger("servicehub.auth")
 
 
-# Authenticate a customer or provider and issue tokens.
 @router.post(
     "/login",
     response_model=LoginResponse,
@@ -50,7 +48,7 @@ def login(
     ],
 ) -> LoginResponse:
     login_response, refresh_token = auth_service.login(
-        request=request,
+        request,
     )
 
     settings = get_settings()
@@ -67,14 +65,13 @@ def login(
 
     logger.info(
         "auth.login.success",
-        user_id=str(login_response.user.id),
-        role=login_response.user.role.value,
+        user_id=login_response.user.id,
+        success=True,
     )
 
     return login_response
 
 
-# Register a new customer or provider account.
 @router.post(
     "/register",
     response_model=RegisterResponse,
@@ -83,25 +80,19 @@ def login(
 )
 def register(
     request: RegisterRequest,
-    auth_service: Annotated[
-        AuthService,
-        Depends(get_auth_service),
-    ],
+    auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> RegisterResponse:
     user = auth_service.register(request)
 
     logger.info(
         "auth.register.success",
-        user_id=str(user.id),
-        role=user.role.value,
+        user_id=user.id,
+        success=True,
     )
 
-    return RegisterResponse(
-        user=user,
-    )
+    return RegisterResponse(user=user)
 
 
-# Revoke the current refresh session and remove its cookie.
 @router.post(
     "/logout",
     status_code=status.HTTP_204_NO_CONTENT,
@@ -114,13 +105,9 @@ def logout(
         Depends(get_auth_service),
     ],
 ) -> None:
-    refresh_token = request.cookies.get(
-        "refresh_token",
-    )
+    refresh_token = request.cookies.get("refresh_token")
 
-    auth_service.logout(
-        refresh_token,
-    )
+    auth_service.logout(refresh_token)
 
     settings = get_settings()
 
@@ -134,10 +121,10 @@ def logout(
 
     logger.info(
         "auth.logout.success",
+        success=True,
     )
 
 
-# Rotate the refresh token and issue a new access token.
 @router.post(
     "/refresh",
     response_model=TokenResponse,
@@ -179,12 +166,12 @@ def refresh(
 
     logger.info(
         "auth.refresh.success",
+        success=True,
     )
 
     return token_response
 
 
-# Return the currently authenticated user.
 @router.get(
     "/me",
     response_model=UserResponse,
