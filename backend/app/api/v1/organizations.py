@@ -18,6 +18,7 @@ from app.services.provider_organization_service import (
     ProviderOrganizationService,
 )
 
+from app.enums.provider import MembershipStatus
 
 router = APIRouter(
     prefix="/organizations",
@@ -111,4 +112,25 @@ def update_my_organization(
     return service.update_my_organization(
         organization_id=membership.organization_id,
         data=data,
+    )
+
+# TODO: IT need to be Admin not provider
+# Update the authenticated provider's organization.
+@router.patch(
+    "/status",
+    response_model=ProviderOrganizationResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_organization_status(
+    status: MembershipStatus,
+    db: DBSession,
+    membership: ProviderMembership = Depends(
+        require_provider_manager
+    ),
+) -> ProviderOrganizationResponse:
+    service = ProviderOrganizationService(db)
+
+    return service.update_organization_status(
+        organization_id=membership.organization_id,
+        status=status,
     )

@@ -4,7 +4,7 @@ from uuid import UUID
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.enums.provider import ProviderStatus
+from app.enums.provider import ProviderStatus, MembershipStatus
 from app.core.exceptions import ConflictError
 from app.core.exceptions import ResourceNotFoundError
 from app.models.provider_organization import ProviderOrganization
@@ -309,6 +309,38 @@ class ProviderOrganizationService:
             self.db.refresh(organization)
 
             return organization
+
+        except Exception:
+            self.db.rollback()
+            raise
+
+    # Update the Organization status
+    def update_organization_status(
+        self,
+        organization_id: UUID,
+        status: MembershipStatus
+    ):
+        organization = self.repository.get_by_id(
+            organization_id
+        )
+        if organization is None:
+            raise ResourceNotFoundError(
+                message="Provider organization not found."
+            )
+        try:
+            organization = self.repository.update_status(
+                organization,
+                status=status,
+            )
+            return ProviderOrganizationResponse.model_validate(
+                organization
+            )
+        except IntegrityError as exc:
+            self.db.rollback()
+
+            raise ConflictError(
+                message="The organization could not be updated."
+            ) from exc
 
         except Exception:
             self.db.rollback()

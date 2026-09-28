@@ -181,6 +181,19 @@ class ProviderOrganizationRepository:
 
         return organization
 
+    def update_status(
+        self,
+        organization: ProviderOrganization,
+        *,
+        status: MembershipStatus,
+    ) -> ProviderOrganization:
+        if status is not None:
+            organization.status = status
+
+        self.db.flush()
+
+        return organization
+
     # Change an organization's status without committing.
     def set_status(
         self,
