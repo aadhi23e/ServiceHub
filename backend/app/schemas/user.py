@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -10,7 +11,7 @@ class UserResponse(BaseModel):
         from_attributes=True,
     )
 
-    id: int
+    id: UUID
     email: EmailStr
     first_name: str
     last_name: str
