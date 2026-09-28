@@ -7,7 +7,8 @@ from app.api.v1.auth import router as auth_router
 # from app.api.v1.providers import router as providers_router
 # from app.api.v1.service_categories import router as services_router
 from app.api.v1.organizations import (
-    router as provider_organizations_router,
+    provider_organizations_router,
+    members_router,
 )
 
 v1_router = APIRouter(
@@ -19,6 +20,7 @@ v1_router.include_router(
 )
 v1_router.include_router(health_router)
 v1_router.include_router(auth_router)
+v1_router.include_router(members_router)
 # v1_router.include_router(user_router)
 # v1_router.include_router(bookings_router)
 # v1_router.include_router(providers_router)
