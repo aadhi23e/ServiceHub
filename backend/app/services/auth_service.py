@@ -59,31 +59,12 @@ class AuthService:
             first_name=request.first_name.strip(),
             last_name=request.last_name.strip(),
             phone=request.phone.strip() if request.phone else None,
-            role=request.role,
+            role=UserRole.CUSTOMER,
             status=UserStatus.ACTIVE,
         )
 
         try:
-            if request.role == UserRole.CUSTOMER:
-                self.auth_repository.create_user(user)
-
-            elif request.role == UserRole.PROVIDER:
-                self.auth_repository.create_provider_account(
-                    user=user,
-                    display_name=(
-                        f"{request.first_name.strip()} "
-                        f"{request.last_name.strip()}"
-                    ),
-                    organization_name=request.organization_name,
-                    legal_name=request.legal_name,
-                )
-
-            else:
-                raise ConflictError(
-                    code="INVALID_REGISTRATION_ROLE",
-                    message="This user role cannot be registered publicly.",
-                )
-
+            self.auth_repository.create_user(user)
             self.db.commit()
             self.db.refresh(user)
 
@@ -130,10 +111,6 @@ class AuthService:
                 message="Invalid email or password.",
             )
 
-        if user.role == UserRole.ADMIN:
-            raise AuthenticationError(
-                message="Invalid email or password.",
-            )
 
         access_token, expires_in = create_access_token(
             user_id=user.id,
