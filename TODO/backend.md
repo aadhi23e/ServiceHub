@@ -1,0 +1,2 @@
+- backend\app\services\provider_organization_service.py in this we need to check if the same user try to create other profile or not.
+- The ProviderVerification need a rejection_reason column
