@@ -8,50 +8,11 @@ from app.models.provider_membership import ProviderMembership
 from app.models.provider_organization import ProviderOrganization
 from app.models.provider_location import ProviderLocation
 from app.models.service import Service
-from app.models.provider_profile import ProviderProfile
+
 
 class ProviderOrganizationRepository:
     def __init__(self, db: Session):
         self.db = db
-
-    # Create a provider profile.
-    def create_profile(
-        self,
-        profile: ProviderProfile,
-    ) -> ProviderProfile:
-        self.db.add(profile)
-        self.db.flush()
-
-        return profile
-
-    # Create a provider organization.
-    def create_organization(
-        self,
-        organization: ProviderOrganization,
-    ) -> ProviderOrganization:
-        self.db.add(organization)
-        self.db.flush()
-
-    # Create a provider organization.
-    def update_status_organization(
-        self,
-        organization: ProviderOrganization,
-        status: ProviderStatus,
-    ) -> ProviderOrganization:
-        organization.status = status
-        self.db.flush()
-
-        return organization
-
-    # Create an organization membership.
-    def create_membership(
-        self,
-        membership: ProviderMembership,
-    ) -> ProviderMembership:
-        self.db.add(membership)
-        self.db.flush()
-
-        return membership
 
     # Return an organization by ID.
     def get_by_id(
@@ -144,8 +105,7 @@ class ProviderOrganizationRepository:
         return organizations, total
 
     # Return all organizations for platform administration.
-    # def list_all(
-    def list_admin(
+    def list_all(
         self,
         *,
         search: str | None,
@@ -283,6 +243,44 @@ class ProviderOrganizationRepository:
 
         return int(self.db.scalar(statement) or 0)
 
+# new one
+from uuid import UUID
+
+from sqlalchemy import func, or_, select
+from sqlalchemy.orm import Session
+
+from app.enums.provider import ProviderStatus
+from app.models.provider_membership import ProviderMembership
+from app.models.provider_organization import ProviderOrganization
+
+
+class ProviderOrganizationRepository:
+    def __init__(self, db: Session):
+        self.db = db
+
+    # Get an organization by ID regardless of status.
+    def get_by_id(
+        self,
+        organization_id: UUID,
+    ) -> ProviderOrganization | None:
+        statement = select(ProviderOrganization).where(
+            ProviderOrganization.id == organization_id,
+        )
+
+        return self.db.scalar(statement)
+
+    # Get an active organization for public access.
+    def get_public_by_id(
+        self,
+        organization_id: UUID,
+    ) -> ProviderOrganization | None:
+        statement = select(ProviderOrganization).where(
+            ProviderOrganization.id == organization_id,
+            ProviderOrganization.status == ProviderStatus.ACTIVE,
+        )
+
+        return self.db.scalar(statement)
+
     # Get the organization belonging to an active provider membership.
     def get_by_member_user_id(
         self,
@@ -303,17 +301,120 @@ class ProviderOrganizationRepository:
         )
 
         return self.db.scalar(statement)
-    # Get the organization created by a provider user.
-    def get_by_created_user_id(
+
+    # Return public organizations with pagination and optional search.
+    def list_public(
         self,
-        *,
-        user_id: UUID,
-    ) -> ProviderOrganization | None:
+        search: str | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[ProviderOrganization], int]:
+        filters = [
+            ProviderOrganization.status == ProviderStatus.ACTIVE,
+        ]
+
+        if search:
+            search_pattern = f"%{search}%"
+
+            filters.append(
+                or_(
+                    ProviderOrganization.name.ilike(search_pattern),
+                    ProviderOrganization.description.ilike(
+                        search_pattern,
+                    ),
+                )
+            )
+
+        count_statement = select(
+            func.count(ProviderOrganization.id),
+        ).where(*filters)
+
+        total = self.db.scalar(count_statement) or 0
+
         statement = (
             select(ProviderOrganization)
-            .where(
-                ProviderOrganization.created_by == user_id,
+            .where(*filters)
+            .order_by(
+                ProviderOrganization.name.asc(),
             )
+            .offset(offset)
+            .limit(limit)
         )
 
-        return self.db.scalar(statement)
+        organizations = list(
+            self.db.scalars(statement).all()
+        )
+
+        return organizations, total
+
+    # Return all organizations for administrative use.
+    def list_admin(
+        self,
+        search: str | None,
+        status: ProviderStatus | None,
+        offset: int,
+        limit: int,
+    ) -> tuple[list[ProviderOrganization], int]:
+        filters = []
+
+        if search:
+            search_pattern = f"%{search}%"
+
+            filters.append(
+                or_(
+                    ProviderOrganization.name.ilike(search_pattern),
+                    ProviderOrganization.legal_name.ilike(
+                        search_pattern,
+                    ),
+                )
+            )
+
+        if status is not None:
+            filters.append(
+                ProviderOrganization.status == status,
+            )
+
+        count_statement = select(
+            func.count(ProviderOrganization.id),
+        ).where(*filters)
+
+        total = self.db.scalar(count_statement) or 0
+
+        statement = (
+            select(ProviderOrganization)
+            .where(*filters)
+            .order_by(
+                ProviderOrganization.created_at.desc(),
+            )
+            .offset(offset)
+            .limit(limit)
+        )
+
+        organizations = list(
+            self.db.scalars(statement).all()
+        )
+
+        return organizations, total
+
+    # Update organization fields.
+    def update(
+        self,
+        organization: ProviderOrganization,
+    ) -> ProviderOrganization:
+        self.db.flush()
+
+        return organization
+
+    # Count members belonging to an organization.
+    def count_members(
+        self,
+        organization_id: UUID,
+    ) -> int:
+        statement = select(
+            func.count(ProviderMembership.id),
+        ).where(
+            ProviderMembership.organization_id == organization_id,
+            ProviderMembership.status != "REMOVED",
+        )
+
+        return self.db.scalar(statement) or 0

@@ -6,6 +6,25 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.enums.provider import ProviderStatus
 
 
+# Return public organization information.
+class ProviderOrganizationPublicResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    description: str | None
+
+
+# Return a paginated list of public organizations.
+class ProviderOrganizationPublicListResponse(BaseModel):
+    items: list[ProviderOrganizationPublicResponse]
+    page: int
+    page_size: int
+    total: int
+    total_pages: int
+
+
+# Return the authenticated provider's organization.
 class ProviderOrganizationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -18,66 +37,70 @@ class ProviderOrganizationResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
-# TODO: Need to be update
-class ProviderOrganizationPublicResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
-    name: str
-    legal_name: str | None
-    description: str | None
-    status: ProviderStatus
-    created_by: UUID
-    created_at: datetime
-    updated_at: datetime
-
-class ProviderOrganizationUpdateRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
+# Update organization information.
+class ProviderOrganizationUpdate(BaseModel):
     name: str | None = Field(
         default=None,
-        min_length=1,
-        max_length=150,
+        min_length=2,
+        max_length=255,
     )
-
     legal_name: str | None = Field(
         default=None,
-        max_length=200,
+        max_length=255,
     )
-
     description: str | None = Field(
         default=None,
         max_length=2000,
     )
 
-class ProviderOrganizationListItem(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
 
-    id: UUID
-    name: str
-    status: ProviderStatus
+# Return an organization to an administrator.
+class ProviderOrganizationAdminResponse(
+    ProviderOrganizationResponse,
+):
+    pass
 
+
+# Return an organization in an admin list.
 class ProviderOrganizationAdminListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: UUID
     name: str
+    legal_name: str | None
     status: ProviderStatus
+    created_by: UUID
+    created_at: datetime
 
-class ProviderOrganizationListResponse(BaseModel):
-    items: list[ProviderOrganizationListItem]
+
+# Return a paginated admin organization list.
+class ProviderOrganizationAdminListResponse(BaseModel):
+    items: list[ProviderOrganizationAdminListItem]
+    page: int
+    page_size: int
     total: int
+    total_pages: int
 
-# TODO: need to change this 
-class ProviderOrganizationAdminResponse(BaseModel):
-    items: list[ProviderOrganizationListItem]
-    total: int
 
-class ProviderOrganizationSummaryResponse(BaseModel):
+# Return administrative organization statistics.
+class ProviderOrganizationAdminSummary(BaseModel):
     id: UUID
     name: str
     status: ProviderStatus
-
     member_count: int
-    location_count: int
-    service_count: int
+
+# Create a provider organization for the authenticated customer.
+class ProviderOrganizationCreate(BaseModel):
+    organization_name: str = Field(
+        min_length=2,
+        max_length=255,
+    )
+    legal_name: str | None = Field(
+        default=None,
+        max_length=255,
+    )
+    display_name: str = Field(
+        min_length=2,
+        max_length=255,
+    )

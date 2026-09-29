@@ -1,68 +1,55 @@
+from uuid import UUID
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.models.provider import ProviderProfile
+from app.models.provider_verification import ProviderVerification
+from app.enums.servicehub import VerificationStatus
 
-
-class ProviderRepository:
-    def __init__(self, db: Session) -> None:
+class ProviderVerificationRepository:
+    def __init__(self, db: Session):
         self.db = db
 
+    # Return a provider verification by ID.
     def get_by_id(
         self,
-        provider_id: int,
-    ) -> ProviderProfile | None:
-        statement = select(ProviderProfile).where(ProviderProfile.id == provider_id)
+        verification_id: UUID,
+    ) -> ProviderVerification | None:
+        statement = (
+            select(ProviderVerification)
+            .where(
+                ProviderVerification.id == verification_id,
+            )
+        )
 
         return self.db.scalar(statement)
 
-    def get_by_user_id(
+    # Return the pending verification for an organization.
+    def get_pending_by_organization_id(
         self,
-        user_id: int,
-    ) -> ProviderProfile | None:
-        statement = select(ProviderProfile).where(ProviderProfile.user_id == user_id)
+        organization_id: UUID,
+    ) -> ProviderVerification | None:
+        statement = (
+            select(ProviderVerification)
+            .where(
+                ProviderVerification.organization_id
+                == organization_id,
+                ProviderVerification.status
+                == VerificationStatus.PENDING,
+            )
+            .order_by(
+                ProviderVerification.created_at.desc(),
+            )
+            .limit(1)
+        )
 
         return self.db.scalar(statement)
 
-    def create(
+    # Save verification changes without committing.
+    def flush(
         self,
-        provider: ProviderProfile,
-    ) -> ProviderProfile:
-        self.db.add(provider)
-
+        verification: ProviderVerification,
+    ) -> ProviderVerification:
         self.db.flush()
 
-        return provider
-
-    def update(
-        self,
-        provider: ProviderProfile,
-        *,
-        business_name: str | None = None,
-        description: str | None = None,
-        phone: str | None = None,
-        address: str | None = None,
-        city: str | None = None,
-        timezone: str | None = None,
-    ) -> ProviderProfile:
-        if business_name is not None:
-            provider.business_name = business_name
-
-        if description is not None:
-            provider.description = description
-
-        if phone is not None:
-            provider.phone = phone
-
-        if address is not None:
-            provider.address = address
-
-        if city is not None:
-            provider.city = city
-
-        if timezone is not None:
-            provider.timezone = timezone
-
-        self.db.flush()
-
-        return provider
+        return verification

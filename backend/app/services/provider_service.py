@@ -1,15 +1,15 @@
 from sqlalchemy.orm import Session
 
 from app.core.exceptions import ResourceNotFoundError
-from app.models.provider import ProviderProfile
-from app.repositories.provider_repository import ProviderRepository
+from app.models.provider_profile import ProviderProfile
+from app.repositories.provider_repository import ProviderRepositoryRepository
 from app.schemas.provider import ProviderUpdateRequest
 
 
 class ProviderService:
     def __init__(self, db: Session) -> None:
         self.db = db
-        self.provider_repository = ProviderRepository(db)
+        self.provider_repository = ProviderRepositoryRepository(db)
 
     def get_provider(
         self,
