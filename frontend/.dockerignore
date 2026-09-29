@@ -16,3 +16,13 @@ dist
 .node_modules
 rough/
 PLANS/
+node_modules
+dist
+.vite
+.git
+.gitignore
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

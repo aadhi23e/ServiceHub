@@ -74,6 +74,7 @@ services:
   backend:
     build:
       context: ./backend
+      dockerfile: Dockerfile
 
     container_name: servicehub-backend
     restart: unless-stopped
@@ -88,9 +89,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
       redis:
         condition: service_healthy
+
+    volumes:
+      - ./backend:/app
 
     command:
       [
@@ -102,9 +105,6 @@ services:
         "8000",
         "--reload"
       ]
-
-    volumes:
-      - ./backend:/app
 
     healthcheck:
       test:
@@ -125,6 +125,7 @@ services:
   celery-worker:
     build:
       context: ./backend
+      dockerfile: Dockerfile
 
     container_name: servicehub-celery-worker
     restart: unless-stopped
@@ -136,9 +137,11 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
       redis:
         condition: service_healthy
+
+    volumes:
+      - ./backend:/app
 
     command:
       [
@@ -149,31 +152,32 @@ services:
         "--loglevel=INFO"
       ]
 
-    volumes:
-      - ./backend:/app
-
 
   # ============================================================
-  # Vue Frontend
+  # Vue + Vite Frontend
   # ============================================================
 
   frontend:
     build:
       context: ./frontend
+      dockerfile: Dockerfile
 
     container_name: servicehub-frontend
     restart: unless-stopped
     init: true
 
+    ports:
+      - "5173:5173"
+
     depends_on:
       backend:
         condition: service_healthy
 
-    ports:
-      - "5173:5173"
-
     volumes:
+      # Mount source code for Vite HMR
       - ./frontend:/app
+
+      # Keep Linux container node_modules separate
       - frontend_node_modules:/app/node_modules
 
     command:
@@ -190,11 +194,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:5173/"
+          "wget --no-verbose --tries=1 --spider http://localhost:5173/"
         ]
       interval: 10s
       timeout: 5s

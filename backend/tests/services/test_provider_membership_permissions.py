@@ -1,7 +1,7 @@
 import pytest
 
 from app.enums.provider import ProviderMembershipRole
-from app.exceptions.authorization import AuthorizationError
+from .authorization import AuthorizationError
 from app.services.provider_membership_service import (
     ProviderMembershipService,
 )

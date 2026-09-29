@@ -5,10 +5,8 @@ import { useRouter } from 'vue-router';
 import { register } from '../../api/auth';
 import { ApiError } from '../../api/client';
 import type { UserRole } from '../../types/router';
-import { useAuthStore } from '../../stores/auth';
 
 const router = useRouter();
-const authStore = useAuthStore();
 
 const firstName = ref('');
 const lastName = ref('');
@@ -35,22 +33,6 @@ const canSubmit = computed(() => {
     !isSubmitting.value
   );
 });
-
-function getDashboardRoute(selectedRole: UserRole) {
-  switch (selectedRole) {
-    case 'CUSTOMER':
-      return { name: 'customer' };
-
-    case 'PROVIDER':
-      return { name: 'provider' };
-
-    case 'ADMIN':
-      return { name: 'admin' };
-
-    default:
-      return { name: 'login' };
-  }
-}
 
 async function handleSubmit(): Promise<void> {
   errorMessage.value = '';
@@ -89,7 +71,6 @@ async function handleSubmit(): Promise<void> {
       first_name: firstName.value.trim(),
       last_name: lastName.value.trim(),
       phone: phone.value.trim() || null,
-      role: role.value,
     });
 
     /*
@@ -201,40 +182,6 @@ async function handleSubmit(): Promise<void> {
               :disabled="isSubmitting"
             />
           </div>
-
-          <fieldset class="role-field">
-            <legend>Account type</legend>
-
-            <div class="role-options">
-              <label
-                class="role-option"
-                :class="{
-                  selected: role === 'CUSTOMER',
-                }"
-              >
-                <input v-model="role" type="radio" value="CUSTOMER" :disabled="isSubmitting" />
-
-                <span>
-                  <strong>Customer</strong>
-                  <small> Find and book services </small>
-                </span>
-              </label>
-
-              <label
-                class="role-option"
-                :class="{
-                  selected: role === 'PROVIDER',
-                }"
-              >
-                <input v-model="role" type="radio" value="PROVIDER" :disabled="isSubmitting" />
-
-                <span>
-                  <strong>Provider</strong>
-                  <small> Offer and manage services </small>
-                </span>
-              </label>
-            </div>
-          </fieldset>
 
           <div class="form-field">
             <label for="register-password"> Password </label>
@@ -430,67 +377,6 @@ async function handleSubmit(): Promise<void> {
 
 .password-toggle:hover:not(:disabled) {
   color: var(--color-primary-hover);
-}
-
-.role-field {
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.role-field legend {
-  margin-bottom: var(--space-3);
-}
-
-.role-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-}
-
-.role-option {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast);
-}
-
-.role-option:hover {
-  background: var(--color-surface-hover);
-}
-
-.role-option.selected {
-  border-color: var(--color-primary);
-  background: var(--color-primary-soft);
-}
-
-.role-option input {
-  margin-top: 3px;
-  accent-color: var(--color-primary);
-}
-
-.role-option span {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.role-option strong {
-  color: var(--color-text-primary);
-  font-size: 0.9rem;
-}
-
-.role-option small {
-  color: var(--color-text-secondary);
-  font-size: 0.78rem;
-  line-height: 1.4;
 }
 
 .submit-button {

@@ -1,73 +1,40 @@
+# backend/app/api/v1/user.py
+
 from typing import Annotated
+from uuid import UUID
+from app.models.user import User
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
-from app.core.exceptions import (
-    AuthorizationError,
-    ResourceNotFoundError,
-)
-from app.dependencies.auth import get_current_user
+from app.dependencies.authorization import get_current_user
 from app.dependencies.authorization import require_admin
 from app.dependencies.core import DBSession
-from app.enums.user import UserRole
 from app.models.user import User
-from app.repositories.user_repository import UserRepository
-from app.schemas.user import (
-    AdminUserUpdateRequest,
-    UserResponse,
-    UserUpdateRequest,
+from app.schemas.address import (
+    AddressCreateRequest,
+    AddressResponse,
+    AddressUpdateRequest,
 )
+from app.schemas.user import UserResponse, UserUpdateRequest
+from app.services.user_address_service import UserAddressService
+from app.services.user_service import UserService
+
+from app.repositories.user_repository import UserRepository
 
 router = APIRouter(
     prefix="/users",
-    tags=["users"],
+    tags=["Users"],
 )
-
-
-# @router.get(
-#     "/me",
-#     response_model=UserResponse,
-# )
-# def get_me(
-#     current_user: Annotated[
-#         User,
-#         Depends(get_current_user),
-#     ],
-# ) -> UserResponse:
-#     return current_user
-
-
-# @router.patch(
-#     "/me",
-#     response_model=UserResponse,
-# )
-# def update_me(
-#     request: UserUpdateRequest,
-#     current_user: Annotated[
-#         User,
-#         Depends(get_current_user),
-#     ],
-#     db: DBSession,
-# ) -> UserResponse:
-#     user_repository = UserRepository(db)
-
-#     return user_repository.update(
-#         current_user,
-#         first_name=request.first_name,
-#         last_name=request.last_name,
-#         phone=request.phone,
-#     )
-
 
 @router.get(
     "",
     response_model=list[UserResponse],
 )
 def list_users(
-    # current_user: Annotated[
-    #     User,
-    #     Depends(require_admin),
-    # ],
+    current_user: Annotated[
+        User,
+        Depends(require_admin),
+    ],
     db: DBSession,
 ) -> list[UserResponse]:
     user_repository = UserRepository(db)
@@ -75,116 +42,293 @@ def list_users(
     return user_repository.list_users()
 
 
-# @router.get(
-#     "/{user_id}",
-#     response_model=UserResponse,
-# )
-# def get_user(
-#     user_id: int,
-#     current_user: Annotated[
-#         User,
-#         Depends(get_current_user),
-#     ],
-#     db: DBSession,
-# ) -> UserResponse:
-#     user_repository = UserRepository(db)
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+)
+def get_current_user_profile(
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    """
+    Return the authenticated user's profile.
+    """
 
-#     # A non-admin user can only view their own account.
-#     if current_user.role != UserRole.ADMIN.value and current_user.id != user_id:
-#         raise AuthorizationError(
-#             message="You do not have permission to access this user.",
-#             code="USER_ACCESS_FORBIDDEN",
-#         )
+    service = UserService(db)
 
-#     user = user_repository.get_by_id(user_id)
+    user = service.get_current_user(
+        user_id=current_user.id,
+    )
 
-#     if user is None:
-#         raise ResourceNotFoundError(
-#             message="User not found.",
-#             code="USER_NOT_FOUND",
-#         )
-
-#     return user
+    return UserResponse.model_validate(user)
 
 
-# @router.patch(
-#     "/{user_id}",
-#     response_model=UserResponse,
-# )
-# def admin_update_user(
-#     user_id: int,
-#     request: AdminUserUpdateRequest,
-#     current_user: Annotated[
-#         User,
-#         Depends(require_admin),
-#     ],
-#     db: DBSession,
-# ) -> UserResponse:
-#     user_repository = UserRepository(db)
+@router.patch(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_current_user_profile(
+    data: UserUpdateRequest,
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> UserResponse:
+    """
+    Update the authenticated user's editable profile fields.
+    """
 
-#     user = user_repository.get_by_id(user_id)
+    service = UserService(db)
 
-#     if user is None:
-#         raise ResourceNotFoundError(
-#             message="User not found.",
-#             code="USER_NOT_FOUND",
-#         )
+    try:
+        user = service.update_current_user(
+            user_id=current_user.id,
+            first_name=data.first_name,
+            last_name=data.last_name,
+            phone=data.phone,
+        )
 
-#     return user_repository.update_admin_fields(
-#         user,
-#         first_name=request.first_name,
-#         last_name=request.last_name,
-#         phone=request.phone,
-#         role=request.role,
-#         status=request.status,
-#     )
+        db.commit()
+        db.refresh(user)
 
+    except Exception:
+        db.rollback()
+        raise
 
-# @router.post(
-#     "/{user_id}/suspend",
-#     response_model=UserResponse,
-# )
-# def suspend_user(
-#     user_id: int,
-#     current_user: Annotated[
-#         User,
-#         Depends(require_admin),
-#     ],
-#     db: DBSession,
-# ) -> UserResponse:
-#     user_repository = UserRepository(db)
-
-#     user = user_repository.get_by_id(user_id)
-
-#     if user is None:
-#         raise ResourceNotFoundError(
-#             message="User not found.",
-#             code="USER_NOT_FOUND",
-#         )
-
-#     return user_repository.suspend(user)
+    return UserResponse.model_validate(user)
 
 
-# @router.post(
-#     "/{user_id}/activate",
-#     response_model=UserResponse,
-# )
-# def activate_user(
-#     user_id: int,
-#     current_user: Annotated[
-#         User,
-#         Depends(require_admin),
-#     ],
-#     db: DBSession,
-# ) -> UserResponse:
-#     user_repository = UserRepository(db)
+@router.get(
+    "/me/addresses",
+    response_model=list[AddressResponse],
+    status_code=status.HTTP_200_OK,
+)
+def list_my_addresses(
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> list[AddressResponse]:
+    """
+    Return saved addresses belonging to the authenticated user.
+    """
 
-#     user = user_repository.get_by_id(user_id)
+    service = UserAddressService(db)
 
-#     if user is None:
-#         raise ResourceNotFoundError(
-#             message="User not found.",
-#             code="USER_NOT_FOUND",
-#         )
+    user_addresses = service.list_addresses(
+        user_id=current_user.id,
+    )
 
-#     return user_repository.activate(user)
+    return [
+        AddressResponse(
+            id=user_address.id,
+            address_line_1=user_address.address.address_line_1,
+            address_line_2=user_address.address.address_line_2,
+            landmark=user_address.address.landmark,
+            city=user_address.address.city,
+            state=user_address.address.state,
+            postal_code=user_address.address.postal_code,
+            country_code=user_address.address.country_code,
+            latitude=user_address.address.latitude,
+            longitude=user_address.address.longitude,
+            label=user_address.label,
+            is_default=user_address.is_default,
+            created_at=user_address.address.created_at,
+            updated_at=user_address.address.updated_at,
+        )
+        for user_address in user_addresses
+    ]
+
+
+@router.post(
+    "/me/addresses",
+    response_model=AddressResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_my_address(
+    data: AddressCreateRequest,
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> AddressResponse:
+    """
+    Create and save an address for the authenticated user.
+    """
+
+    service = UserAddressService(db)
+
+    try:
+        user_address = service.create_address(
+            user_id=current_user.id,
+            address_line_1=data.address_line_1,
+            address_line_2=data.address_line_2,
+            landmark=data.landmark,
+            city=data.city,
+            state=data.state,
+            postal_code=data.postal_code,
+            country_code=data.country_code,
+            latitude=data.latitude,
+            longitude=data.longitude,
+            label=data.label,
+            is_default=data.is_default,
+        )
+
+        db.commit()
+        db.refresh(user_address)
+
+    except Exception:
+        db.rollback()
+        raise
+
+    address = user_address.address
+
+    return AddressResponse(
+        id=address.id,
+        address_line_1=address.address_line_1,
+        address_line_2=address.address_line_2,
+        landmark=address.landmark,
+        city=address.city,
+        state=address.state,
+        postal_code=address.postal_code,
+        country_code=address.country_code,
+        latitude=address.latitude,
+        longitude=address.longitude,
+        label=user_address.label,
+        is_default=user_address.is_default,
+        created_at=address.created_at,
+        updated_at=address.updated_at,
+    )
+
+
+@router.patch(
+    "/me/addresses/{user_address_id}",
+    response_model=AddressResponse,
+    status_code=status.HTTP_200_OK,
+)
+def update_my_address(
+    user_address_id: UUID,
+    data: AddressUpdateRequest,
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> AddressResponse:
+    """
+    Update a saved address owned by the authenticated user.
+    """
+
+    service = UserAddressService(db)
+
+    try:
+        user_address = service.update_address(
+            user_id=current_user.id,
+            user_address_id=user_address_id,
+            address_line_1=data.address_line_1,
+            address_line_2=data.address_line_2,
+            landmark=data.landmark,
+            city=data.city,
+            state=data.state,
+            postal_code=data.postal_code,
+            country_code=data.country_code,
+            latitude=data.latitude,
+            longitude=data.longitude,
+            label=data.label,
+        )
+
+        db.commit()
+        db.refresh(user_address)
+
+    except Exception:
+        db.rollback()
+        raise
+
+    address = user_address.address
+
+    return AddressResponse(
+        id=address.id,
+        address_line_1=address.address_line_1,
+        address_line_2=address.address_line_2,
+        landmark=address.landmark,
+        city=address.city,
+        state=address.state,
+        postal_code=address.postal_code,
+        country_code=address.country_code,
+        latitude=address.latitude,
+        longitude=address.longitude,
+        label=user_address.label,
+        is_default=user_address.is_default,
+        created_at=address.created_at,
+        updated_at=address.updated_at,
+    )
+
+
+@router.post(
+    "/me/addresses/{user_address_id}/default",
+    response_model=AddressResponse,
+    status_code=status.HTTP_200_OK,
+)
+def set_my_default_address(
+    user_address_id: UUID,
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> AddressResponse:
+    """
+    Make one of the authenticated user's saved addresses the default.
+    """
+
+    service = UserAddressService(db)
+
+    try:
+        user_address = service.set_default(
+            user_id=current_user.id,
+            user_address_id=user_address_id,
+        )
+
+        db.commit()
+        db.refresh(user_address)
+
+    except Exception:
+        db.rollback()
+        raise
+
+    address = user_address.address
+
+    return AddressResponse(
+        id=address.id,
+        address_line_1=address.address_line_1,
+        address_line_2=address.address_line_2,
+        landmark=address.landmark,
+        city=address.city,
+        state=address.state,
+        postal_code=address.postal_code,
+        country_code=address.country_code,
+        latitude=address.latitude,
+        longitude=address.longitude,
+        label=user_address.label,
+        is_default=user_address.is_default,
+        created_at=address.created_at,
+        updated_at=address.updated_at,
+    )
+
+
+@router.delete(
+    "/me/addresses/{user_address_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_my_address(
+    user_address_id: UUID,
+    db: DBSession,
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """
+    Delete a saved address belonging to the authenticated user.
+    """
+
+    service = UserAddressService(db)
+
+    try:
+        service.delete_address(
+            user_id=current_user.id,
+            user_address_id=user_address_id,
+        )
+
+        db.commit()
+
+    except Exception:
+        db.rollback()
+        raise

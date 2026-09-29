@@ -23,7 +23,6 @@ export interface RegisterRequest {
   first_name: string;
   last_name: string;
   phone?: string | null;
-  role: UserRole;
 }
 
 export interface RegisterResponse {

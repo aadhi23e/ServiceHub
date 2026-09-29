@@ -4,7 +4,7 @@ from app.enums.provider import (
     MembershipStatus,
     ProviderMembershipRole,
 )
-from app.exceptions.authorization import AuthorizationError
+from app.exceptionsauthorization import AuthorizationError
 from app.services.provider_organization_service import (
     ProviderOrganizationService,
 )
