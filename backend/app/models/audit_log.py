@@ -4,8 +4,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import DateTime, ForeignKey, Index, JSON, String, func
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy import (
+    DateTime,
+    ForeignKey,
+    Index,
+    String,
+    func,
+)
+from sqlalchemy.dialects.postgresql import JSONB, UUID as PG_UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -25,7 +31,11 @@ class AuditLog(Base):
 
     actor_user_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="SET NULL"),
+        ForeignKey(
+            "users.id",
+            ondelete="SET NULL",
+        ),
+        nullable=True,
     )
 
     action: Mapped[str] = mapped_column(
@@ -33,26 +43,19 @@ class AuditLog(Base):
         nullable=False,
     )
 
-    resource_type: Mapped[str] = mapped_column(
-        String(100),
+    entity_type: Mapped[str] = mapped_column(
+        String(50),
         nullable=False,
     )
 
-    resource_id: Mapped[UUID | None] = mapped_column(
+    entity_id: Mapped[UUID | None] = mapped_column(
         PG_UUID(as_uuid=True),
+        nullable=True,
     )
 
-    request_id: Mapped[str | None] = mapped_column(
-        String(100),
-    )
-
-    track_id: Mapped[str | None] = mapped_column(
-        String(100),
-    )
-
-    metadata_JSON: Mapped[dict | None] = mapped_column(
-        "metadata",
-        JSON,
+    metadata_: Mapped[dict | None] = mapped_column(
+        JSONB,
+        nullable=True,
     )
 
     created_at: Mapped[datetime] = mapped_column(
@@ -72,17 +75,13 @@ class AuditLog(Base):
             "actor_user_id",
         ),
         Index(
-            "ix_audit_logs_resource",
-            "resource_type",
-            "resource_id",
+            "ix_audit_logs_action",
+            "action",
         ),
         Index(
-            "ix_audit_logs_request_id",
-            "request_id",
-        ),
-        Index(
-            "ix_audit_logs_track_id",
-            "track_id",
+            "ix_audit_logs_entity",
+            "entity_type",
+            "entity_id",
         ),
         Index(
             "ix_audit_logs_created_at",
