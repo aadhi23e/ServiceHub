@@ -1,156 +1,178 @@
-from sqlalchemy.orm import Session
+from uuid import UUID, uuid4
 
-from app.core.exceptions import (
-    ConflictError,
-    ResourceNotFoundError,
-)
-from app.models.provider import ProviderProfile
+from app.core.exceptions import ResourceConflictError
+from app.core.exceptions import ResourceNotFoundError
 from app.models.service import Service
 from app.repositories.service_category_repository import (
     ServiceCategoryRepository,
 )
 from app.repositories.service_repository import ServiceRepository
-from app.schemas.service import (
-    ServiceCreateRequest,
-    ServiceUpdateRequest,
-)
 
 
 class ServiceService:
-    def __init__(self, db: Session) -> None:
-        self.db = db
-
-        self.service_repository = ServiceRepository(db)
+    def __init__(self, db):
+        self.repository = ServiceRepository(db)
         self.category_repository = ServiceCategoryRepository(db)
 
     def list_services(
         self,
-        provider: ProviderProfile,
         *,
-        offset: int,
-        limit: int,
-    ) -> tuple[list[Service], int]:
-        return self.service_repository.list_by_provider(
-            provider.id,
-            offset=offset,
-            limit=limit,
+        active_only: bool = False,
+        category_id: UUID | None = None,
+    ) -> list[Service]:
+        return self.repository.list_all(
+            active_only=active_only,
+            category_id=category_id,
         )
 
     def get_service(
         self,
-        provider: ProviderProfile,
-        service_id: int,
+        *,
+        service_id: UUID,
     ) -> Service:
-        service = self.service_repository.get_by_id_for_provider(
-            service_id,
-            provider.id,
-        )
+        service = self.repository.get_by_id(service_id)
 
         if service is None:
             raise ResourceNotFoundError(
                 message="Service not found.",
-                code="SERVICE_NOT_FOUND",
             )
 
         return service
 
     def create_service(
         self,
-        provider: ProviderProfile,
-        request: ServiceCreateRequest,
+        *,
+        category_id: UUID,
+        name: str,
+        slug: str,
+        description: str | None,
     ) -> Service:
-        category = self.category_repository.get_by_id(request.category_id)
+        category = self.category_repository.get_by_id(
+            category_id,
+        )
 
         if category is None:
             raise ResourceNotFoundError(
                 message="Service category not found.",
-                code="SERVICE_CATEGORY_NOT_FOUND",
             )
 
         if not category.is_active:
-            raise ConflictError(
-                message="The selected service category is inactive.",
-                code="SERVICE_CATEGORY_INACTIVE",
+            raise ResourceConflictError(
+                message="Cannot create a service under an inactive category.",
+            )
+
+        normalized_slug = slug.strip().lower()
+
+        existing = self.repository.get_by_slug(
+            normalized_slug,
+        )
+
+        if existing is not None:
+            raise ResourceConflictError(
+                message="A service with this slug already exists.",
             )
 
         service = Service(
-            provider_id=provider.id,
-            category_id=request.category_id,
-            name=request.name.strip(),
-            description=request.description,
-            duration_minutes=request.duration_minutes,
-            price=request.price,
+            id=uuid4(),
+            category_id=category_id,
+            name=name.strip(),
+            slug=normalized_slug,
+            description=description.strip()
+            if description is not None
+            else None,
             is_active=True,
         )
 
-        self.service_repository.create(service)
-
-        self.db.commit()
-        self.db.refresh(service)
-
-        return service
+        return self.repository.create(service)
 
     def update_service(
         self,
-        provider: ProviderProfile,
-        service_id: int,
-        request: ServiceUpdateRequest,
+        *,
+        service_id: UUID,
+        category_id: UUID | None,
+        name: str | None,
+        slug: str | None,
+        description: str | None,
     ) -> Service:
         service = self.get_service(
-            provider,
-            service_id,
+            service_id=service_id,
         )
 
-        if request.category_id is not None:
-            category = self.category_repository.get_by_id(request.category_id)
+        if category_id is not None:
+            category = self.category_repository.get_by_id(
+                category_id,
+            )
 
             if category is None:
                 raise ResourceNotFoundError(
                     message="Service category not found.",
-                    code="SERVICE_CATEGORY_NOT_FOUND",
                 )
 
             if not category.is_active:
-                raise ConflictError(
-                    message="The selected service category is inactive.",
-                    code="SERVICE_CATEGORY_INACTIVE",
+                raise ResourceConflictError(
+                    message="Cannot move a service to an inactive category.",
                 )
 
-        updated_service = self.service_repository.update(
-            service,
-            category_id=request.category_id,
-            name=request.name.strip() if request.name is not None else None,
-            description=request.description,
-            duration_minutes=request.duration_minutes,
-            price=request.price,
-        )
+            service.category_id = category_id
 
-        self.db.commit()
-        self.db.refresh(updated_service)
+        if slug is not None:
+            normalized_slug = slug.strip().lower()
 
-        return updated_service
+            existing = self.repository.get_by_slug(
+                normalized_slug,
+            )
 
-    def set_active(
+            if existing is not None and existing.id != service.id:
+                raise ResourceConflictError(
+                    message="A service with this slug already exists.",
+                )
+
+            service.slug = normalized_slug
+
+        if name is not None:
+            service.name = name.strip()
+
+        if description is not None:
+            service.description = description.strip()
+
+        return self.repository.update(service)
+
+    def activate_service(
         self,
-        provider: ProviderProfile,
-        service_id: int,
         *,
-        is_active: bool,
+        service_id: UUID,
     ) -> Service:
         service = self.get_service(
-            provider,
-            service_id,
+            service_id=service_id,
         )
 
-        if service.is_active == is_active:
-            return service
-
-        self.service_repository.set_active(
-            service,
-            is_active,
+        category = self.category_repository.get_by_id(
+            service.category_id,
         )
 
-        self.db.commit()
-        self.db.refresh(service)
+        if category is None:
+            raise ResourceNotFoundError(
+                message="Service category not found.",
+            )
 
-        return service
+        if not category.is_active:
+            raise ResourceConflictError(
+                message="Cannot activate a service under an inactive category.",
+            )
+
+        service.is_active = True
+
+        return self.repository.update(service)
+
+    def deactivate_service(
+        self,
+        *,
+        service_id: UUID,
+    ) -> Service:
+        service = self.get_service(
+            service_id=service_id,
+        )
+
+        service.is_active = False
+
+        return self.repository.update(service)

@@ -1,5 +1,13 @@
 from enum import Enum
+from enum import StrEnum
 
+
+class ServiceRequirementType(StrEnum):
+    TEXT = "TEXT"
+    NUMBER = "NUMBER"
+    BOOLEAN = "BOOLEAN"
+    SELECT = "SELECT"
+    DATE = "DATE"
 
 class UserRole(str, Enum):
     CUSTOMER = "CUSTOMER"

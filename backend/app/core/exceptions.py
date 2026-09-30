@@ -100,6 +100,11 @@ class DependencyUnavailableError(ServiceHubError):
     message = "A required service is temporarily unavailable."
 
 
+class ResourceConflictError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)
+        
 # TODO: remove the below ones they are for references only
 """
 raise ResourceNotFoundError(
