@@ -215,9 +215,9 @@ async function refreshAccessToken(): Promise<string | null> {
       authStore.setAccessToken(accessToken);
 
       return accessToken;
-    } catch {
+    } catch(error) {
       const authStore = useAuthStore(pinia);
-
+      console.error('REFRESH FAILED:', error);
       authStore.clearSession();
 
       return null;

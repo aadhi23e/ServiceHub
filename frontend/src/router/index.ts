@@ -119,36 +119,150 @@ const routes: RouteRecordRaw[] = [
       role: 'PROVIDER',
     },
     children: [
-      {
-        path: '',
-        name: 'provider',
-        component: () => import('../pages/provider/ProviderDashboard.vue'),
-        meta: {
-          title: 'Provider Dashboard',
-          description: 'Manage your services, availability, and bookings.',
-        },
-      },
+  {
+  path: 'provider',
+  name: 'provider-dashboard',
+  component: () =>
+    import(
+      '../pages/provider/ProviderDashboardPage.vue'
+    ),
+  meta: {
+    requiresAuth: true,
+    role: 'PROVIDER',
+    title: 'Provider Dashboard',
+  },
+},
+{
+  path: 'services',
+  name: 'provider-services',
+  component: () =>
+    import(
+      '../pages/provider/ProviderServicesPage.vue'
+    ),
+  meta: {
+    requiresAuth: true,
+    role: 'PROVIDER',
+    title: 'Services',
+  },
+},
+{
+  path: 'services/new',
+  name: 'provider-service-create',
+  component: () =>
+    import(
+      '../pages/provider/ProviderServiceCreatePage.vue'
+    ),
+  meta: {
+    requiresAuth: true,
+    role: 'PROVIDER',
+    title: 'Add Service',
+  },
+},
+{
+  path: 'services/:offeringId',
+  name: 'provider-service-details',
+  component: () =>
+    import(
+      '../pages/provider/ProviderServiceDetailsPage.vue'
+    ),
+  meta: {
+    requiresAuth: true,
+    role: 'PROVIDER',
+    title: 'Service',
+  },
+},
+{
+  path: 'team',
+  name: 'provider-team',
+  component: () =>
+    import(
+      '../pages/provider/ProviderTeamPage.vue'
+    ),
+  meta: {
+    requiresAuth: true,
+    role: 'PROVIDER',
+    title: 'Team',
+  },
+},
+//       {
+//         path: '',
+//         name: 'provider',
+//         component: () => import('../pages/provider/ProviderDashboard.vue'),
+//         meta: {
+//           title: 'Provider Dashboard',
+//           description: 'Manage your services, availability, and bookings.',
+//         },
+//       },
+//       // For the provider services
+//       {
+//         path: "services",
+//         name: "provider-services",
+//         component: () =>
+//           import(
+//             "../pages/provider/ProviderServiceOfferingsPage.vue"
+//           ),
+//         meta: {
+//           requiresAuth: true,
+//           role: "PROVIDER",
+//           title: "My Services",
+//           description:
+//             "Manage services offered by your organization.",
+//         },
+//       },
+//       {
+//   path: "service-offerings",
+//   name: "provider-service-offerings",
+//   component: () =>
+//     import("../pages/provider/ServiceOfferingsPage.vue"),
+//   meta: {
+//     requiresAuth: true,
+//     role: "PROVIDER",
+//     title: "Service Offerings",
+//     description: "Manage the services offered by your organization.",
+//   },
+// },
+// {
+//   path: "service-offerings/new",
+//   name: "provider-service-offering-create",
+//   component: () =>
+//     import("../pages/provider/ServiceOfferingCreatePage.vue"),
+//   meta: {
+//     requiresAuth: true,
+//     role: "PROVIDER",
+//     title: "Add Service Offering",
+//     description: "Configure a service offered by your organization.",
+//   },
+// },{
+//   path: "service-offerings/:id/edit",
+//   name: "provider-service-offering-edit",
+//   component: () =>
+//     import("../pages/provider/ServiceOfferingCreatePage.vue"),
+//   meta: {
+//     requiresAuth: true,
+//     role: "PROVIDER",
+//     title: "Edit Service Offering",
+//   },
+// },
+//       // Provider Bookings
+//       {
+//         path: 'bookings',
+//         name: 'provider-bookings',
+//         component: () => import('../pages/bookings/BookingsView.vue'),
+//         meta: {
+//           title: 'Bookings',
+//           description: 'Manage your customer bookings.',
+//         },
+//       },
 
-      // Provider Bookings
-      {
-        path: 'bookings',
-        name: 'provider-bookings',
-        component: () => import('../pages/bookings/BookingsView.vue'),
-        meta: {
-          title: 'Bookings',
-          description: 'Manage your customer bookings.',
-        },
-      },
-
-      // Provider Booking Detail
-      {
-        path: 'bookings/:bookingId',
-        name: 'provider-booking-detail',
-        component: () => import('../pages/bookings/BookingDetailView.vue'),
-        meta: {
-          title: 'Booking Details',
-        },
-      },
+//       // Provider Booking Detail
+//       {
+//         path: 'bookings/:bookingId',
+//         name: 'provider-booking-detail',
+//         component: () => import('../pages/bookings/BookingDetailView.vue'),
+//         meta: {
+//           title: 'Booking Details',
+//         },
+//       },
 
       // Provider Profile
       {
@@ -161,38 +275,38 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // Provider Services
-      {
-        path: 'services',
-        name: 'provider-services',
-        component: () => import('../pages/provider/ProviderServicesView.vue'),
-        meta: {
-          title: 'Services',
-          description: 'Manage the services you offer to customers.',
-        },
-      },
+      // // Provider Services
+      // {
+      //   path: 'services',
+      //   name: 'provider-services',
+      //   component: () => import('../pages/provider/ProviderServicesView.vue'),
+      //   meta: {
+      //     title: 'Services',
+      //     description: 'Manage the services you offer to customers.',
+      //   },
+      // },
 
-      // Create Service
-      {
-        path: 'services/new',
-        name: 'provider-service-create',
-        component: () => import('../pages/provider/ProviderServiceCreateView.vue'),
-        meta: {
-          title: 'Create Service',
-          description: 'Create a new service for your customers.',
-        },
-      },
+      // // Create Service
+      // {
+      //   path: 'services/new',
+      //   name: 'provider-service-create',
+      //   component: () => import('../pages/provider/ProviderServiceCreateView.vue'),
+      //   meta: {
+      //     title: 'Create Service',
+      //     description: 'Create a new service for your customers.',
+      //   },
+      // },
 
-      // Edit Service
-      {
-        path: 'services/:serviceId',
-        name: 'provider-service-edit',
-        component: () => import('../pages/provider/ProviderServiceEditView.vue'),
-        meta: {
-          title: 'Edit Service',
-          description: 'Update your service.',
-        },
-      },
+      // // Edit Service
+      // {
+      //   path: 'services/:serviceId',
+      //   name: 'provider-service-edit',
+      //   component: () => import('../pages/provider/ProviderServiceEditView.vue'),
+      //   meta: {
+      //     title: 'Edit Service',
+      //     description: 'Update your service.',
+      //   },
+      // },
     ],
   },
   // ─────────────────────────────────────────────
@@ -216,7 +330,19 @@ const routes: RouteRecordRaw[] = [
           description: 'Manage ServiceHub users, providers, and activity.',
         },
       },
-
+      {
+        path: "service-catalog",
+        name: "admin-service-catalog",
+        component: () =>
+          import("../pages/admin/ServiceCatalogPage.vue"),
+        meta: {
+          requiresAuth: true,
+          role: "ADMIN",
+          title: "Service Catalog",
+          description:
+            "Manage ServiceHub categories, services, and service requirements.",
+        },
+      },
       // Admin Bookings
       {
         path: 'bookings',
@@ -302,16 +428,29 @@ function getDashboardRoute(role: UserRole | null) {
 // Navigation guard
 // ─────────────────────────────────────────────
 
-router.beforeEach((to) => {
+router.beforeEach((to, from) => {
   const authStore = useAuthStore();
 
   const requiresAuth = to.meta.requiresAuth === true;
-
   const requiresGuest = to.meta.requiresGuest === true;
 
   const requiredRole = to.meta.role as UserRole | undefined;
-
   const requiredRoles = to.meta.roles as UserRole[] | undefined;
+
+  console.log('[ROUTER GUARD]', {
+    to: {
+      name: to.name,
+      path: to.path,
+      meta: to.meta,
+    },
+    from: {
+      name: from.name,
+      path: from.path,
+    },
+    isAuthenticated: authStore.isAuthenticated,
+    role: authStore.role,
+    initialized: authStore.initialized,
+  });
 
   if (requiresAuth && !authStore.isAuthenticated) {
     return { name: 'login' };
@@ -325,7 +464,11 @@ router.beforeEach((to) => {
     return getDashboardRoute(authStore.role);
   }
 
-  if (requiresAuth && requiredRoles && !requiredRoles.includes(authStore.role as UserRole)) {
+  if (
+    requiresAuth &&
+    requiredRoles &&
+    !requiredRoles.includes(authStore.role as UserRole)
+  ) {
     return getDashboardRoute(authStore.role);
   }
 
