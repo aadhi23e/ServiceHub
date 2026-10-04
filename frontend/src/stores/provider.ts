@@ -1,80 +1,121 @@
+import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
 
-import { createProvider, getMyProvider, updateMyProvider } from '../api/providers';
+import type { ProviderMembership } from '../types/provider';
 
-import type { Provider, ProviderCreateRequest, ProviderUpdateRequest } from '../types/provider';
+export const useProviderStore = defineStore(
+  'provider',
+  () => {
+    /*
+     * This is intentionally null for now.
+     *
+     * The current /auth/me response only gives us the
+     * platform role:
+     *
+     *   CUSTOMER
+     *   PROVIDER
+     *   ADMIN
+     *
+     * It does not yet give us the organization role:
+     *
+     *   OWNER
+     *   MANAGER
+     *   AGENT
+     *
+     * Later the backend can provide the user's active
+     * provider membership and this store can be populated.
+     */
+    const membership =
+      ref<ProviderMembership | null>(null);
 
-export const useProviderStore = defineStore('provider', () => {
-  const provider = ref<Provider | null>(null);
-  const loading = ref(false);
-  const creating = ref(false);
-  const updating = ref(false);
-  const error = ref<string | null>(null);
+    const initialized = ref(false);
 
-  async function fetchProvider() {
-    loading.value = true;
-    error.value = null;
+    const role = computed(
+      () => membership.value?.role ?? null,
+    );
 
-    try {
-      provider.value = await getMyProvider();
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load provider profile.';
+    const organizationId = computed(
+      () =>
+        membership.value?.organization_id ?? null,
+    );
 
-      throw err;
-    } finally {
-      loading.value = false;
+    const isProviderMember = computed(
+      () =>
+        membership.value !== null &&
+        membership.value.status === 'ACTIVE',
+    );
+
+    const isOwner = computed(
+      () => role.value === 'OWNER',
+    );
+
+    const isManager = computed(
+      () => role.value === 'MANAGER',
+    );
+
+    const isAgent = computed(
+      () => role.value === 'AGENT',
+    );
+
+    const canManageServices = computed(
+      () =>
+        isOwner.value ||
+        isManager.value,
+    );
+
+    const canManageTeam = computed(
+      () =>
+        isOwner.value ||
+        isManager.value,
+    );
+
+    const canAssignServiceMembers = computed(
+      () =>
+        isOwner.value ||
+        isManager.value,
+    );
+
+    function setMembership(
+      value: ProviderMembership | null,
+    ): void {
+      membership.value = value;
     }
-  }
 
-  async function becomeProvider(payload: ProviderCreateRequest) {
-    creating.value = true;
-    error.value = null;
-
-    try {
-      provider.value = await createProvider(payload);
-
-      return provider.value;
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create provider profile.';
-
-      throw err;
-    } finally {
-      creating.value = false;
+    function clearMembership(): void {
+      membership.value = null;
     }
-  }
 
-  async function updateProvider(payload: ProviderUpdateRequest) {
-    updating.value = true;
-    error.value = null;
-
-    try {
-      provider.value = await updateMyProvider(payload);
-
-      return provider.value;
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update provider profile.';
-
-      throw err;
-    } finally {
-      updating.value = false;
+    function setInitialized(
+      value: boolean,
+    ): void {
+      initialized.value = value;
     }
-  }
 
-  function clearProvider() {
-    provider.value = null;
-    error.value = null;
-  }
+    function reset(): void {
+      membership.value = null;
+      initialized.value = false;
+    }
 
-  return {
-    provider,
-    loading,
-    creating,
-    updating,
-    error,
-    fetchProvider,
-    becomeProvider,
-    updateProvider,
-    clearProvider,
-  };
-});
+    return {
+      membership,
+      initialized,
+
+      role,
+      organizationId,
+      isProviderMember,
+
+      isOwner,
+      isManager,
+      isAgent,
+
+      canManageServices,
+      canManageTeam,
+      canAssignServiceMembers,
+
+      setMembership,
+      clearMembership,
+      setInitialized,
+      reset,
+    };
+  },
+);
