@@ -44,3 +44,14 @@ export function deactivateService(serviceId: number): Promise<Service> {
     method: 'POST',
   });
 }
+
+
+
+export async function listServices(
+  page = 1,
+  pageSize = 100,
+): Promise<ServiceListResponse> {
+  return apiRequest<ServiceListResponse>(
+    `/services?page=${page}&page_size=${pageSize}`,
+  );
+}
