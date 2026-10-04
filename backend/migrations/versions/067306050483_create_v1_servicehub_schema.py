@@ -1,18 +1,18 @@
-"""create v1 servicehub schema
+"""create V1 ServiceHub schema
 
-Revision ID: d83f10d9a936
+Revision ID: 067306050483
 Revises: 
-Create Date: 2026-09-26 14:09:48.248057
+Create Date: 2026-09-30 13:17:08.114920
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd83f10d9a936'
+revision: str = '067306050483'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,17 +41,17 @@ def upgrade() -> None:
     op.create_index('ix_addresses_state', 'addresses', ['state'], unique=False)
     op.create_table('service_categories',
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('parent_id', sa.UUID(), nullable=True),
     sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('is_active', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['parent_id'], ['service_categories.id'], ondelete='SET NULL'),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('slug', sa.String(length=120), nullable=False),
+    sa.Column('description', sa.String(length=500), nullable=True),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('slug')
     )
-    op.create_index('ix_service_categories_name', 'service_categories', ['name'], unique=False)
-    op.create_index('ix_service_categories_parent_id', 'service_categories', ['parent_id'], unique=False)
+    op.create_index('ix_service_categories_created_at', 'service_categories', ['created_at'], unique=False)
+    op.create_index('ix_service_categories_is_active', 'service_categories', ['is_active'], unique=False)
     op.create_table('users',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
@@ -59,7 +59,7 @@ def upgrade() -> None:
     sa.Column('first_name', sa.String(length=100), nullable=False),
     sa.Column('last_name', sa.String(length=100), nullable=True),
     sa.Column('phone', sa.String(length=20), nullable=True),
-    sa.Column('role', sa.Enum('ADMIN', 'CUSTOMER', 'PROVIDER', name='user_role'), server_default='CUSTOMER', nullable=False),
+    sa.Column('role', sa.Enum('CUSTOMER', 'PROVIDER', 'ADMIN', name='user_role'), server_default='CUSTOMER', nullable=False),
     sa.Column('status', sa.Enum('ACTIVE', 'SUSPENDED', 'DEACTIVATED', name='user_status'), server_default='ACTIVE', nullable=False),
     sa.Column('last_login_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
@@ -75,20 +75,17 @@ def upgrade() -> None:
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('actor_user_id', sa.UUID(), nullable=True),
     sa.Column('action', sa.String(length=100), nullable=False),
-    sa.Column('resource_type', sa.String(length=100), nullable=False),
-    sa.Column('resource_id', sa.UUID(), nullable=True),
-    sa.Column('request_id', sa.String(length=100), nullable=True),
-    sa.Column('track_id', sa.String(length=100), nullable=True),
-    sa.Column('metadata', sa.JSON(), nullable=True),
+    sa.Column('entity_type', sa.String(length=50), nullable=False),
+    sa.Column('entity_id', sa.UUID(), nullable=True),
+    sa.Column('metadata_', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['actor_user_id'], ['users.id'], ondelete='SET NULL'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_index('ix_audit_logs_action', 'audit_logs', ['action'], unique=False)
     op.create_index('ix_audit_logs_actor_user_id', 'audit_logs', ['actor_user_id'], unique=False)
     op.create_index('ix_audit_logs_created_at', 'audit_logs', ['created_at'], unique=False)
-    op.create_index('ix_audit_logs_request_id', 'audit_logs', ['request_id'], unique=False)
-    op.create_index('ix_audit_logs_resource', 'audit_logs', ['resource_type', 'resource_id'], unique=False)
-    op.create_index('ix_audit_logs_track_id', 'audit_logs', ['track_id'], unique=False)
+    op.create_index('ix_audit_logs_entity', 'audit_logs', ['entity_type', 'entity_id'], unique=False)
     op.create_table('notifications',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
@@ -133,6 +130,22 @@ def upgrade() -> None:
     sa.UniqueConstraint('user_id')
     )
     op.create_index('ix_provider_profiles_user_id', 'provider_profiles', ['user_id'], unique=False)
+    op.create_table('services',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('category_id', sa.UUID(), nullable=False),
+    sa.Column('name', sa.String(length=150), nullable=False),
+    sa.Column('slug', sa.String(length=180), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.ForeignKeyConstraint(['category_id'], ['service_categories.id'], ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('slug')
+    )
+    op.create_index('ix_services_category_id', 'services', ['category_id'], unique=False)
+    op.create_index('ix_services_created_at', 'services', ['created_at'], unique=False)
+    op.create_index('ix_services_is_active', 'services', ['is_active'], unique=False)
     op.create_table('user_addresses',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.UUID(), nullable=False),
@@ -148,6 +161,31 @@ def upgrade() -> None:
     )
     op.create_index('ix_user_addresses_address_id', 'user_addresses', ['address_id'], unique=False)
     op.create_index('ix_user_addresses_user_id', 'user_addresses', ['user_id'], unique=False)
+    op.create_table('bookings',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('customer_id', sa.UUID(), nullable=False),
+    sa.Column('organization_id', sa.UUID(), nullable=False),
+    sa.Column('service_id', sa.UUID(), nullable=False),
+    sa.Column('service_mode', sa.Enum('HOME_SERVICE', 'AT_PROVIDER', name='service_mode'), nullable=False),
+    sa.Column('scheduled_start', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('scheduled_end', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('price', sa.Numeric(precision=12, scale=2), nullable=False),
+    sa.Column('currency', sa.String(length=3), nullable=False),
+    sa.Column('status', sa.Enum('PENDING', 'CONFIRMED', 'ASSIGNMENT_PENDING', 'ASSIGNED', 'RESCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'DISPUTED', name='booking_status'), nullable=False),
+    sa.Column('customer_notes', sa.Text(), nullable=True),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['customer_id'], ['users.id'], ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['organization_id'], ['provider_organizations.id'], ondelete='RESTRICT'),
+    sa.ForeignKeyConstraint(['service_id'], ['services.id'], ondelete='RESTRICT'),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_index('ix_bookings_customer_id', 'bookings', ['customer_id'], unique=False)
+    op.create_index('ix_bookings_org_schedule', 'bookings', ['organization_id', 'scheduled_start'], unique=False)
+    op.create_index('ix_bookings_organization_id', 'bookings', ['organization_id'], unique=False)
+    op.create_index('ix_bookings_scheduled_start', 'bookings', ['scheduled_start'], unique=False)
+    op.create_index('ix_bookings_service_id', 'bookings', ['service_id'], unique=False)
+    op.create_index('ix_bookings_status', 'bookings', ['status'], unique=False)
     op.create_table('provider_locations',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('organization_id', sa.UUID(), nullable=False),
@@ -210,6 +248,7 @@ def upgrade() -> None:
     sa.Column('status', sa.Enum('PENDING', 'APPROVED', 'REJECTED', 'EXPIRED', name='verification_status'), nullable=False),
     sa.Column('document_reference', sa.String(length=255), nullable=True),
     sa.Column('notes', sa.Text(), nullable=True),
+    sa.Column('rejection_reason', sa.Text(), nullable=True),
     sa.Column('reviewed_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('expires_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
@@ -221,27 +260,24 @@ def upgrade() -> None:
     op.create_index('ix_provider_verifications_organization_id', 'provider_verifications', ['organization_id'], unique=False)
     op.create_index('ix_provider_verifications_reviewed_by', 'provider_verifications', ['reviewed_by'], unique=False)
     op.create_index('ix_provider_verifications_status', 'provider_verifications', ['status'], unique=False)
-    op.create_table('services',
+    op.create_table('service_requirements',
     sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('organization_id', sa.UUID(), nullable=False),
-    sa.Column('category_id', sa.UUID(), nullable=False),
-    sa.Column('name', sa.String(length=150), nullable=False),
+    sa.Column('service_id', sa.UUID(), nullable=False),
+    sa.Column('key', sa.String(length=100), nullable=False),
+    sa.Column('label', sa.String(length=150), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('price', sa.Numeric(precision=12, scale=2), nullable=False),
-    sa.Column('currency', sa.String(length=3), nullable=False),
-    sa.Column('duration_minutes', sa.Integer(), nullable=False),
-    sa.Column('buffer_minutes', sa.Integer(), nullable=False),
-    sa.Column('status', sa.Enum('DRAFT', 'ACTIVE', 'INACTIVE', 'ARCHIVED', name='service_status'), nullable=False),
-    sa.Column('service_modes', sa.ARRAY(sa.Enum('HOME_SERVICE', 'AT_PROVIDER', name='service_mode')), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['category_id'], ['service_categories.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['organization_id'], ['provider_organizations.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
+    sa.Column('requirement_type', sa.Enum('TEXT', 'NUMBER', 'BOOLEAN', 'SELECT', 'DATE', name='service_requirement_type'), nullable=False),
+    sa.Column('is_required', sa.Boolean(), server_default=sa.text('false'), nullable=False),
+    sa.Column('sort_order', sa.Integer(), server_default=sa.text('0'), nullable=False),
+    sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
+    sa.ForeignKeyConstraint(['service_id'], ['services.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('service_id', 'key', name='uq_service_requirements_service_key')
     )
-    op.create_index('ix_services_category_id', 'services', ['category_id'], unique=False)
-    op.create_index('ix_services_organization_id', 'services', ['organization_id'], unique=False)
-    op.create_index('ix_services_status', 'services', ['status'], unique=False)
+    op.create_index('ix_service_requirements_is_active', 'service_requirements', ['is_active'], unique=False)
+    op.create_index('ix_service_requirements_service_id', 'service_requirements', ['service_id'], unique=False)
     op.create_table('agent_availability',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('agent_membership_id', sa.UUID(), nullable=False),
@@ -271,60 +307,6 @@ def upgrade() -> None:
     op.create_index('ix_agent_time_off_agent_membership_id', 'agent_time_off', ['agent_membership_id'], unique=False)
     op.create_index('ix_agent_time_off_ends_at', 'agent_time_off', ['ends_at'], unique=False)
     op.create_index('ix_agent_time_off_starts_at', 'agent_time_off', ['starts_at'], unique=False)
-    op.create_table('bookings',
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('customer_id', sa.UUID(), nullable=False),
-    sa.Column('organization_id', sa.UUID(), nullable=False),
-    sa.Column('service_id', sa.UUID(), nullable=False),
-    sa.Column('service_mode', sa.Enum('HOME_SERVICE', 'AT_PROVIDER', name='service_mode'), nullable=False),
-    sa.Column('scheduled_start', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('scheduled_end', sa.DateTime(timezone=True), nullable=False),
-    sa.Column('price', sa.Numeric(precision=12, scale=2), nullable=False),
-    sa.Column('currency', sa.String(length=3), nullable=False),
-    sa.Column('status', sa.Enum('PENDING', 'CONFIRMED', 'ASSIGNMENT_PENDING', 'ASSIGNED', 'RESCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'DISPUTED', name='booking_status'), nullable=False),
-    sa.Column('customer_notes', sa.Text(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['customer_id'], ['users.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['organization_id'], ['provider_organizations.id'], ondelete='RESTRICT'),
-    sa.ForeignKeyConstraint(['service_id'], ['services.id'], ondelete='RESTRICT'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index('ix_bookings_customer_id', 'bookings', ['customer_id'], unique=False)
-    op.create_index('ix_bookings_org_schedule', 'bookings', ['organization_id', 'scheduled_start'], unique=False)
-    op.create_index('ix_bookings_organization_id', 'bookings', ['organization_id'], unique=False)
-    op.create_index('ix_bookings_scheduled_start', 'bookings', ['scheduled_start'], unique=False)
-    op.create_index('ix_bookings_service_id', 'bookings', ['service_id'], unique=False)
-    op.create_index('ix_bookings_status', 'bookings', ['status'], unique=False)
-    op.create_table('provider_operating_hours',
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('provider_location_id', sa.UUID(), nullable=False),
-    sa.Column('day_of_week', sa.Integer(), nullable=False),
-    sa.Column('opens_at', sa.Time(), nullable=True),
-    sa.Column('closes_at', sa.Time(), nullable=True),
-    sa.Column('is_closed', sa.Boolean(), nullable=False),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['provider_location_id'], ['provider_locations.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('provider_location_id', 'day_of_week', name='uq_provider_operating_hours_location_day')
-    )
-    op.create_index('ix_provider_operating_hours_location_id', 'provider_operating_hours', ['provider_location_id'], unique=False)
-    op.create_table('service_requirements',
-    sa.Column('id', sa.UUID(), nullable=False),
-    sa.Column('service_id', sa.UUID(), nullable=False),
-    sa.Column('name', sa.String(length=100), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('requirement_type', sa.Enum('TEXT', 'NUMBER', 'BOOLEAN', 'SINGLE_SELECT', 'MULTI_SELECT', 'FILE', name='requirement_type'), nullable=False),
-    sa.Column('is_required', sa.Boolean(), nullable=False),
-    sa.Column('display_order', sa.Integer(), nullable=False),
-    sa.Column('options', sa.JSON(), nullable=True),
-    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.ForeignKeyConstraint(['service_id'], ['services.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index('ix_service_requirements_service_id', 'service_requirements', ['service_id'], unique=False)
     op.create_table('booking_assignments',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('booking_id', sa.UUID(), nullable=False),
@@ -448,6 +430,20 @@ def upgrade() -> None:
     op.create_index('ix_payments_booking_id', 'payments', ['booking_id'], unique=False)
     op.create_index('ix_payments_provider_reference', 'payments', ['provider_reference'], unique=False)
     op.create_index('ix_payments_status', 'payments', ['status'], unique=False)
+    op.create_table('provider_operating_hours',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('provider_location_id', sa.UUID(), nullable=False),
+    sa.Column('day_of_week', sa.Integer(), nullable=False),
+    sa.Column('opens_at', sa.Time(), nullable=True),
+    sa.Column('closes_at', sa.Time(), nullable=True),
+    sa.Column('is_closed', sa.Boolean(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.ForeignKeyConstraint(['provider_location_id'], ['provider_locations.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('provider_location_id', 'day_of_week', name='uq_provider_operating_hours_location_day')
+    )
+    op.create_index('ix_provider_operating_hours_location_id', 'provider_operating_hours', ['provider_location_id'], unique=False)
     op.create_table('provider_settlements',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('organization_id', sa.UUID(), nullable=False),
@@ -564,6 +560,8 @@ def downgrade() -> None:
     op.drop_index('ix_provider_settlements_organization_id', table_name='provider_settlements')
     op.drop_index('ix_provider_settlements_booking_id', table_name='provider_settlements')
     op.drop_table('provider_settlements')
+    op.drop_index('ix_provider_operating_hours_location_id', table_name='provider_operating_hours')
+    op.drop_table('provider_operating_hours')
     op.drop_index('ix_payments_status', table_name='payments')
     op.drop_index('ix_payments_provider_reference', table_name='payments')
     op.drop_index('ix_payments_booking_id', table_name='payments')
@@ -588,27 +586,15 @@ def downgrade() -> None:
     op.drop_index('ix_booking_assignments_booking_id', table_name='booking_assignments')
     op.drop_index('ix_booking_assignments_agent_membership_id', table_name='booking_assignments')
     op.drop_table('booking_assignments')
-    op.drop_index('ix_service_requirements_service_id', table_name='service_requirements')
-    op.drop_table('service_requirements')
-    op.drop_index('ix_provider_operating_hours_location_id', table_name='provider_operating_hours')
-    op.drop_table('provider_operating_hours')
-    op.drop_index('ix_bookings_status', table_name='bookings')
-    op.drop_index('ix_bookings_service_id', table_name='bookings')
-    op.drop_index('ix_bookings_scheduled_start', table_name='bookings')
-    op.drop_index('ix_bookings_organization_id', table_name='bookings')
-    op.drop_index('ix_bookings_org_schedule', table_name='bookings')
-    op.drop_index('ix_bookings_customer_id', table_name='bookings')
-    op.drop_table('bookings')
     op.drop_index('ix_agent_time_off_starts_at', table_name='agent_time_off')
     op.drop_index('ix_agent_time_off_ends_at', table_name='agent_time_off')
     op.drop_index('ix_agent_time_off_agent_membership_id', table_name='agent_time_off')
     op.drop_table('agent_time_off')
     op.drop_index('ix_agent_availability_agent_membership_id', table_name='agent_availability')
     op.drop_table('agent_availability')
-    op.drop_index('ix_services_status', table_name='services')
-    op.drop_index('ix_services_organization_id', table_name='services')
-    op.drop_index('ix_services_category_id', table_name='services')
-    op.drop_table('services')
+    op.drop_index('ix_service_requirements_service_id', table_name='service_requirements')
+    op.drop_index('ix_service_requirements_is_active', table_name='service_requirements')
+    op.drop_table('service_requirements')
     op.drop_index('ix_provider_verifications_status', table_name='provider_verifications')
     op.drop_index('ix_provider_verifications_reviewed_by', table_name='provider_verifications')
     op.drop_index('ix_provider_verifications_organization_id', table_name='provider_verifications')
@@ -625,9 +611,20 @@ def downgrade() -> None:
     op.drop_index('ix_provider_locations_location_type', table_name='provider_locations')
     op.drop_index('ix_provider_locations_address_id', table_name='provider_locations')
     op.drop_table('provider_locations')
+    op.drop_index('ix_bookings_status', table_name='bookings')
+    op.drop_index('ix_bookings_service_id', table_name='bookings')
+    op.drop_index('ix_bookings_scheduled_start', table_name='bookings')
+    op.drop_index('ix_bookings_organization_id', table_name='bookings')
+    op.drop_index('ix_bookings_org_schedule', table_name='bookings')
+    op.drop_index('ix_bookings_customer_id', table_name='bookings')
+    op.drop_table('bookings')
     op.drop_index('ix_user_addresses_user_id', table_name='user_addresses')
     op.drop_index('ix_user_addresses_address_id', table_name='user_addresses')
     op.drop_table('user_addresses')
+    op.drop_index('ix_services_is_active', table_name='services')
+    op.drop_index('ix_services_created_at', table_name='services')
+    op.drop_index('ix_services_category_id', table_name='services')
+    op.drop_table('services')
     op.drop_index('ix_provider_profiles_user_id', table_name='provider_profiles')
     op.drop_table('provider_profiles')
     op.drop_index('ix_provider_organizations_status', table_name='provider_organizations')
@@ -638,19 +635,18 @@ def downgrade() -> None:
     op.drop_index('ix_notifications_status', table_name='notifications')
     op.drop_index('ix_notifications_created_at', table_name='notifications')
     op.drop_table('notifications')
-    op.drop_index('ix_audit_logs_track_id', table_name='audit_logs')
-    op.drop_index('ix_audit_logs_resource', table_name='audit_logs')
-    op.drop_index('ix_audit_logs_request_id', table_name='audit_logs')
+    op.drop_index('ix_audit_logs_entity', table_name='audit_logs')
     op.drop_index('ix_audit_logs_created_at', table_name='audit_logs')
     op.drop_index('ix_audit_logs_actor_user_id', table_name='audit_logs')
+    op.drop_index('ix_audit_logs_action', table_name='audit_logs')
     op.drop_table('audit_logs')
     op.drop_index('ix_users_status', table_name='users')
     op.drop_index('ix_users_role', table_name='users')
     op.drop_index('ix_users_phone', table_name='users')
     op.drop_index('ix_users_created_at', table_name='users')
     op.drop_table('users')
-    op.drop_index('ix_service_categories_parent_id', table_name='service_categories')
-    op.drop_index('ix_service_categories_name', table_name='service_categories')
+    op.drop_index('ix_service_categories_is_active', table_name='service_categories')
+    op.drop_index('ix_service_categories_created_at', table_name='service_categories')
     op.drop_table('service_categories')
     op.drop_index('ix_addresses_state', table_name='addresses')
     op.drop_index('ix_addresses_postal_code', table_name='addresses')
