@@ -209,11 +209,6 @@ class AuthService:
                 message="Invalid or expired refresh token.",
             )
 
-        if user.role == UserRole.ADMIN:
-            raise AuthenticationError(
-                message="Invalid or expired refresh token.",
-            )
-
         access_token, expires_in = create_access_token(
             user_id=user.id,
             role=user.role.value,
