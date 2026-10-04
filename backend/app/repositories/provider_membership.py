@@ -45,7 +45,22 @@ class ProviderMembershipRepository:
         )
 
         return self.db.scalar(statement)
+    def get_active_membership(
+        self,
+        *,
+        user_id: UUID,
+        organization_id: UUID,
+    ) -> ProviderMembership | None:
+        stmt = (
+            select(ProviderMembership)
+            .where(
+                ProviderMembership.user_id == user_id,
+                ProviderMembership.organization_id == organization_id,
+                ProviderMembership.status == MembershipStatus.ACTIVE,
+            )
+        )
 
+        return self.db.scalar(stmt)
     def get_any_by_user_and_org(
         self,
         *,
@@ -183,3 +198,20 @@ class ProviderMembershipRepository:
         self.db.flush()
 
         return membership
+
+    def get_active_membership_for_user(
+        self,
+        *,
+        user_id: UUID,
+    ):
+        stmt = (
+            select(ProviderMembership)
+            .where(
+                ProviderMembership.user_id == user_id,
+                ProviderMembership.status
+                == MembershipStatus.ACTIVE,
+            )
+            .limit(1)
+        )
+
+        return self.db.scalar(stmt)

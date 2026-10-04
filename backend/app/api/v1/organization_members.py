@@ -1,24 +1,21 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 
 from app.dependencies.authorization import get_current_user
 from app.dependencies.core import DBSession
-from app.enums.provider import (
-    AgentType,
-    ProviderMembershipRole,
-)
 from app.models.user import User
 from app.repositories.provider_membership import (
     ProviderMembershipRepository,
 )
-from app.repositories.provider_organization import (
+from app.repositories.provider_organization_repository import (
     ProviderOrganizationRepository,
 )
 from app.schemas.provider_membership import (
-    AddOrganizationMemberRequest,
-    OrganizationMemberResponse,
-    UpdateOrganizationMemberRequest,
+    ProviderMemberListResponse,
+    ProviderMembershipResponse,
+    ProviderMembershipUpdate,
+    ProviderMemberInvitationCreate,
 )
 from app.services.provider_membership_service import (
     ProviderMembershipService,
@@ -34,7 +31,6 @@ router = APIRouter(
 def get_membership_service(
     db: DBSession,
 ) -> ProviderMembershipService:
-
     return ProviderMembershipService(
         db=db,
         membership_repository=ProviderMembershipRepository(db),
@@ -42,24 +38,40 @@ def get_membership_service(
     )
 
 
-@router.post(
+@router.get(
     "/{organization_id}/members",
-    response_model=OrganizationMemberResponse,
-    status_code=status.HTTP_201_CREATED,
+    response_model=ProviderMemberListResponse,
 )
-def add_member(
+def list_members(
     organization_id: UUID,
-    payload: AddOrganizationMemberRequest,
     current_user: User = Depends(get_current_user),
     service: ProviderMembershipService = Depends(
         get_membership_service,
     ),
 ):
+    return service.list_members(
+        actor_user_id=current_user.id,
+        organization_id=organization_id,
+    )
 
+
+@router.post(
+    "/{organization_id}/members",
+    response_model=ProviderMembershipResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def add_member(
+    organization_id: UUID,
+    payload: ProviderMemberInvitationCreate,
+    current_user: User = Depends(get_current_user),
+    service: ProviderMembershipService = Depends(
+        get_membership_service,
+    ),
+):
     return service.add_member(
         actor_user_id=current_user.id,
         organization_id=organization_id,
-        user_id=payload.user_id,
+        email=payload.email,
         role=payload.role,
         agent_type=payload.agent_type,
     )
@@ -67,18 +79,17 @@ def add_member(
 
 @router.patch(
     "/{organization_id}/members/{membership_id}",
-    response_model=OrganizationMemberResponse,
+    response_model=ProviderMembershipResponse,
 )
 def update_member(
     organization_id: UUID,
     membership_id: UUID,
-    payload: UpdateOrganizationMemberRequest,
+    payload: ProviderMembershipUpdate,
     current_user: User = Depends(get_current_user),
     service: ProviderMembershipService = Depends(
         get_membership_service,
     ),
 ):
-
     return service.update_member(
         actor_user_id=current_user.id,
         organization_id=organization_id,
@@ -100,7 +111,6 @@ def remove_member(
         get_membership_service,
     ),
 ):
-
     service.remove_member(
         actor_user_id=current_user.id,
         organization_id=organization_id,
