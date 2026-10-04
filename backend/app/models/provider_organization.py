@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from app.models.provider_location import ProviderLocation
     from app.models.provider_service_area import ProviderServiceArea
     from app.models.provider_verification import ProviderVerification
-
+    from app.models.provider_service_offering import ProviderServiceOffering
 
 class ProviderOrganization(Base):
     __tablename__ = "provider_organizations"
@@ -83,6 +83,12 @@ class ProviderOrganization(Base):
     )
     verifications: Mapped[list["ProviderVerification"]] = relationship(
         back_populates="organization",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+    service_offerings: Mapped[list["ProviderServiceOffering"]] = relationship(
+        back_populates="organization",
+        foreign_keys="ProviderServiceOffering.organization_id",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )

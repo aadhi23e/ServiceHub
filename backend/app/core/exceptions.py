@@ -55,6 +55,13 @@ class ConflictError(ServiceHubError):
     code = "CONFLICT"
     message = "The requested operation conflicts with the current state."
 
+class ResourceConflictError(ServiceHubError):
+    """Raised when an operation conflicts with current state."""
+
+    status_code = 409
+    code = "RESOURCE_CONFLICT"
+    message = "The requested resource is already exicts"
+
 
 class ValidationError(ServiceHubError):
     """Raised when application-level validation fails."""
@@ -100,11 +107,12 @@ class DependencyUnavailableError(ServiceHubError):
     message = "A required service is temporarily unavailable."
 
 
-class ResourceConflictError(Exception):
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(message)
-        
+# class ResourceConflictError(Exception):
+#     def __init__(self, message: str):
+#         self.message = message
+#         super().__init__(message)
+
+
 # TODO: remove the below ones they are for references only
 """
 raise ResourceNotFoundError(

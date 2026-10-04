@@ -2,7 +2,7 @@ from enum import Enum
 from enum import StrEnum
 
 
-class ServiceRequirementType(StrEnum):
+class ServiceRequirementType(str, Enum):
     TEXT = "TEXT"
     NUMBER = "NUMBER"
     BOOLEAN = "BOOLEAN"

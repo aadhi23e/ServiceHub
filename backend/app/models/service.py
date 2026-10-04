@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from app.models.service_category import ServiceCategory
     from app.models.service_requirement import ServiceRequirement
     from app.models.booking import Booking
-
+    from app.models.provider_service_offering import ProviderServiceOffering
 
 class Service(Base):
     __tablename__ = "services"
@@ -62,6 +62,11 @@ class Service(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         order_by="ServiceRequirement.sort_order",
+    )
+    provider_offerings: Mapped[list["ProviderServiceOffering"]] = relationship(
+        back_populates="service",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     bookings: Mapped[list["Booking"]] = relationship(
     back_populates="service",

@@ -28,7 +28,8 @@ from app.models.service_requirement import ServiceRequirement
 from app.models.transaction import Transaction
 from app.models.user import User
 from app.models.user_address import UserAddress
-
+from app.models.provider_service_member import ProviderServiceMember
+from app.models.provider_service_offering import ProviderServiceOffering
 
 __all__ = [
     "Address",
@@ -61,4 +62,6 @@ __all__ = [
     "Transaction",
     "User",
     "UserAddress",
+    "ProviderServiceMember",
+    "ProviderServiceOffering",
 ]

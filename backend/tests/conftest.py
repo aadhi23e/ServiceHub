@@ -8,7 +8,7 @@ from app.db.base import Base
 from app.main import app
 from app.models import *  # noqa: F403
 
-
+# docker compose exec postgres psql -U servicehub -d servicehub -c "CREATE DATABASE servicehub_test OWNER servicehub;"
 TEST_DATABASE_URL = "postgresql+psycopg://servicehub:servicehub@localhost:5432/servicehub_test"
 
 

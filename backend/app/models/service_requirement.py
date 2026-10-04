@@ -25,6 +25,12 @@ if TYPE_CHECKING:
 
 
 class ServiceRequirement(Base):
+    """
+    House Cleaning
+    ├── number_of_rooms     NUMBER     required
+    ├── cleaning_type       SELECT     required
+    └── has_pets            BOOLEAN    optional
+    """
     __tablename__ = "service_requirements"
 
     __table_args__ = (
